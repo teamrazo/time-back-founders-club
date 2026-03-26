@@ -190,6 +190,8 @@ export default function Stage2Page() {
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [honeypot, setHoneypot] = useState("");
 
   useEffect(() => {
     setStageData(storage.getStage2());
@@ -242,7 +244,7 @@ export default function Stage2Page() {
         stageLabel: 'Marketing Assessment',
         entry,
         stage2: stageData,
-        _hp: '',
+        _hp: honeypot,
         submittedAt: new Date().toISOString(),
       };
       const res = await fetch('/api/stage', {
@@ -275,6 +277,19 @@ export default function Stage2Page() {
 
   return (
     <div className="min-h-screen bg-brand-bg">
+      {/* Honeypot (anti-bot) */}
+      <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden" aria-hidden="true">
+        <label htmlFor="hp">Leave this field empty</label>
+        <input
+          id="hp"
+          type="text"
+          name="_hp"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+        />
+      </div>
       <header className="sticky top-0 z-50 border-b border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
