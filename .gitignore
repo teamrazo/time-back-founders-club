@@ -17,6 +17,9 @@ dist/
 .env.test.local
 .env.production.local
 
+# Vercel
+.vercel/
+
 # Data (submissions - do NOT commit client data)
 data/
 
@@ -33,6 +36,3 @@ yarn-error.log*
 .vscode/
 .idea/
 *.swp
-.vercel
-.env.local
-.vercel/

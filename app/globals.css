@@ -78,45 +78,23 @@ input[type='range']::-moz-range-thumb {
   border-radius: 50%;
   cursor: pointer;
   border: 3px solid #0B1628;
-  transition: transform 0.15s ease;
+  box-shadow: 0 0 0 2px #3B82F6;
 }
 
-/* Checkbox custom */
-.custom-checkbox {
-  accent-color: #3B82F6;
+/* Select option styling */
+select option {
+  background-color: #1A2332;
+  color: #E2E8F0;
 }
 
-/* Focus styles */
-.focus-ring:focus-visible {
-  outline: 2px solid #3B82F6;
-  outline-offset: 2px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Glass card */
-.glass-card {
-  background: rgba(26, 35, 50, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #60A5FA, #3B82F6, #1D4ED8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-gold {
-  background: linear-gradient(135deg, #FCD34D, #F59E0B);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Step transitions */
-.step-enter {
-  animation: slideInRight 0.35s ease-out;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
@@ -124,37 +102,6 @@ input[type='range']::-moz-range-thumb {
   to { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-24px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.step-exit-left {
-  animation: slideOutLeft 0.25s ease-in forwards;
-}
-
-@keyframes slideOutLeft {
-  from { opacity: 1; transform: translateX(0); }
-  to { opacity: 0; transform: translateX(-24px); }
-}
-
-/* Pill badge */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Section label */
-.section-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #3B82F6;
-}
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.35s ease-out; }

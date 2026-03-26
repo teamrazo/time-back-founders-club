@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Client Intake Form | RazoRSharp Networks",
-  description: "TimeBACK System — New Client Onboarding. One System. One Flow. One Outcome. FREEDOM.",
+  title: "Client Onboarding | RazoRSharp Networks",
+  description: "One System. One Flow. One Outcome. FREEDOM — RazoRSharp Networks Client Onboarding",
   openGraph: {
-    title: "Client Intake Form | RazoRSharp Networks",
-    description: "TimeBACK System onboarding — build your FREEDOM Plan.",
+    title: "Client Onboarding | RazoRSharp Networks",
+    description: "TimeBACK System — 3-Stage Client Onboarding",
     type: "website",
   },
 };

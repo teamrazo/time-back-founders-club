@@ -3,61 +3,50 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
-interface CheckboxOption {
-  value: string;
-  label: string;
-}
-
 interface CheckboxGroupProps {
   label?: string;
-  options: CheckboxOption[];
-  selected: string[];
-  onChange: (selected: string[]) => void;
-  className?: string;
+  options: string[];
+  value: string[];
+  onChange: (value: string[]) => void;
+  hint?: string;
 }
 
-export function CheckboxGroup({ label, options, selected, onChange, className }: CheckboxGroupProps) {
-  const toggle = (value: string) => {
-    if (selected.includes(value)) {
-      onChange(selected.filter((v) => v !== value));
+export function CheckboxGroup({ label, options, value, onChange, hint }: CheckboxGroupProps) {
+  const toggle = (opt: string) => {
+    if (value.includes(opt)) {
+      onChange(value.filter(v => v !== opt));
     } else {
-      onChange([...selected, value]);
+      onChange([...value, opt]);
     }
   };
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      {label && <p className="text-sm font-medium text-slate-300">{label}</p>}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {options.map((opt) => {
-          const checked = selected.includes(opt.value);
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => toggle(opt.value)}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg border text-sm text-left transition-all duration-150",
-                checked
-                  ? "border-brand-accent bg-brand-accent/10 text-slate-100"
-                  : "border-brand-slate bg-brand-charcoal text-slate-400 hover:border-slate-500 hover:text-slate-300"
-              )}
-            >
-              <div
-                className={cn(
-                  "w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150",
-                  checked
-                    ? "bg-brand-accent border-brand-accent"
-                    : "border-slate-600"
-                )}
-              >
-                {checked && <Check size={12} strokeWidth={3} className="text-white" />}
-              </div>
-              <span>{opt.label}</span>
-            </button>
-          );
-        })}
+    <div className="flex flex-col gap-2">
+      {label && <label className="text-sm font-medium text-slate-300">{label}</label>}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {options.map(opt => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => toggle(opt)}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm text-left transition-all duration-150",
+              value.includes(opt)
+                ? "border-brand-accent bg-brand-accent/10 text-brand-accent-light"
+                : "border-brand-slate bg-brand-charcoal text-slate-400 hover:border-slate-500 hover:text-slate-300"
+            )}
+          >
+            <div className={cn(
+              "w-4 h-4 rounded flex-shrink-0 border flex items-center justify-center transition-all",
+              value.includes(opt) ? "bg-brand-accent border-brand-accent" : "border-brand-slate"
+            )}>
+              {value.includes(opt) && <Check size={10} className="text-white" />}
+            </div>
+            {opt}
+          </button>
+        ))}
       </div>
+      {hint && <p className="text-xs text-slate-500">{hint}</p>}
     </div>
   );
 }

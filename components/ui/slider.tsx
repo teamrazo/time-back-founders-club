@@ -49,10 +49,7 @@ export function Slider({
           {label && <span className="text-sm font-medium text-slate-300">{label}</span>}
           {showValue && (
             <div className="flex items-center gap-2">
-              <span
-                className="text-2xl font-bold tabular-nums"
-                style={{ color }}
-              >
+              <span className="text-2xl font-bold tabular-nums" style={{ color }}>
                 {value}
               </span>
               <span className="text-xs text-slate-500">/{max}</span>
@@ -77,7 +74,6 @@ export function Slider({
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="w-full cursor-pointer"
-          style={{ "--thumb-color": color } as React.CSSProperties}
         />
       </div>
       <div className="flex justify-between text-xs text-slate-600">
