@@ -159,8 +159,14 @@ function HomePage() {
       <header className="border-b border-brand-border/60">
         <div className="max-w-4xl mx-auto px-4 py-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-sm font-black">R</span>
+            <div className="w-8 h-8 rounded-lg bg-brand-card flex items-center justify-center flex-shrink-0 border border-brand-border/60 shadow-card-glow overflow-hidden">
+              {/* Purple RSN logo */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="RazoRSharp Networks"
+                className="w-full h-full object-contain p-1"
+              />
             </div>
             <div>
               <div className="text-sm font-bold text-brand-fg tracking-wide">RazoRSharp Networks</div>
