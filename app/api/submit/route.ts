@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir, readFile } from "fs/promises";
+import { writeFile, mkdir, appendFile } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
 
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
+const DEFAULT_DATA_DIR =
+  process.env.VERCEL === "1"
+    ? path.join("/tmp", "rsn-client-intake")
+    : path.join(process.cwd(), "data");
+
+const DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
 const WEBHOOK_URL = process.env.WEBHOOK_URL || "";
 
 export async function POST(req: NextRequest) {
@@ -34,11 +39,10 @@ export async function POST(req: NextRequest) {
     const filePath = path.join(DATA_DIR, `${id}.json`);
     await writeFile(filePath, JSON.stringify(submission, null, 2), "utf-8");
 
-    // Append to aggregate log
+    // Append to aggregate log (best-effort)
     const logPath = path.join(DATA_DIR, "submissions.jsonl");
     const line = JSON.stringify(submission) + "\n";
-    const existingLog = existsSync(logPath) ? await readFile(logPath, "utf-8") : "";
-    await writeFile(logPath, existingLog + line, "utf-8");
+    await appendFile(logPath, line, "utf-8");
 
     // Fire webhook if configured
     if (WEBHOOK_URL) {
