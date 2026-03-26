@@ -8,6 +8,7 @@ const NEXT_STEPS = [
   { icon: "🎯", text: "Your FREEDOM Plan is being drafted" },
   { icon: "📊", text: "Daily coaching briefs start within 48 hours" },
   { icon: "🔧", text: "Your platforms are being connected" },
+  { icon: "🚀", text: "Complete the Fast Start to hit the ground running" },
 ];
 
 export default function CompletePage() {
@@ -55,6 +56,32 @@ export default function CompletePage() {
           </div>
         </div>
 
+        {/* Fast Start CTA */}
+        <div className="p-6 rounded-xl border border-brand-accent/30 bg-brand-accent/5 mb-8">
+          <h3 className="text-sm font-bold text-brand-accent uppercase tracking-wide mb-2">
+            ⚡ Fast Start — Don&apos;t Skip This
+          </h3>
+          <p className="text-sm text-slate-400 mb-4 leading-relaxed">
+            Your system is being built. While we work, complete the Fast Start guide to accelerate your launch and get the most out of your AI Growth Engine from day one.
+          </p>
+          <a
+            href="https://doc.razorsharpnetworks.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-accent hover:bg-brand-accent-dark text-white font-semibold text-sm transition-all shadow-lg shadow-brand-accent/25"
+          >
+            Start the Fast Start Guide
+            <ArrowRight size={16} />
+          </a>
+        </div>
+
+        {/* Confirmation message */}
+        <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 mb-8">
+          <p className="text-xs text-slate-400 leading-relaxed">
+            📬 A confirmation has been sent to your email. If you don&apos;t see it, check your spam folder. You can always return here to update your information.
+          </p>
+        </div>
+
         {/* Brand line */}
         <p className="text-xs text-slate-600 mb-8 italic">
           One System. One Flow. One Outcome. FREEDOM
@@ -62,7 +89,7 @@ export default function CompletePage() {
 
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-accent hover:bg-brand-accent-dark text-white font-semibold text-sm transition-all shadow-lg shadow-brand-accent/25"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium text-sm transition-all"
         >
           Back to Dashboard
           <ArrowRight size={16} />

@@ -1,7 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { CheckCircle2, Clock, Circle, ChevronRight, Zap, Target, Key } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { CheckCircle2, Clock, Circle, ChevronRight, Zap, Target, Key, X } from "lucide-react";
 import { storage } from "@/lib/storage";
 import { OnboardingStatus, StageStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -100,21 +101,60 @@ function overallProgress(status: OnboardingStatus): number {
   return Math.round(((complete + partial * 0.5) / 3) * 100);
 }
 
-export default function HomePage() {
+const STAGE_CONFIRMATIONS: Record<string, string> = {
+  stage1: "✅ TimeBACK Build received! Your AI Growth Engine profile is being created.",
+  stage2: "✅ Assessment received! Your strategy is being mapped.",
+  stage3: "✅ Access confirmed! Your platforms are being connected.",
+};
+
+export default function HomePageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-brand-navy" />}>
+      <HomePage />
+    </Suspense>
+  );
+}
+
+function HomePage() {
   const [status, setStatus] = useState<OnboardingStatus | null>(null);
   const [entryComplete, setEntryComplete] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const s = storage.getStatus();
     setStatus(s);
     setEntryComplete(s.entryComplete);
-  }, []);
+
+    // Check for stage completion redirect
+    for (const key of ["stage1", "stage2", "stage3"]) {
+      if (searchParams.get(key) === "complete" && STAGE_CONFIRMATIONS[key]) {
+        setToast(STAGE_CONFIRMATIONS[key]);
+        // Clear URL params without reload
+        window.history.replaceState({}, "", "/");
+        // Auto-dismiss after 8 seconds
+        setTimeout(() => setToast(null), 8000);
+        break;
+      }
+    }
+  }, [searchParams]);
 
   const allComplete = status?.stage1 === "complete" && status?.stage2 === "complete" && status?.stage3 === "complete";
   const progress = status ? overallProgress(status) : 0;
 
   return (
     <div className="min-h-screen bg-brand-navy">
+      {/* Confirmation Toast */}
+      {toast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4 animate-fade-in">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-5 py-4 flex items-start gap-3 shadow-2xl shadow-emerald-500/10 backdrop-blur-sm">
+            <p className="text-sm text-emerald-300 font-medium flex-1 leading-relaxed">{toast}</p>
+            <button onClick={() => setToast(null)} className="text-emerald-400/60 hover:text-emerald-300 flex-shrink-0 mt-0.5">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="border-b border-brand-slate/60">
         <div className="max-w-4xl mx-auto px-4 py-5">
