@@ -34,3 +34,5 @@ yarn-error.log*
 .idea/
 *.swp
 .vercel
+.env.local
+.vercel/
