@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2, Save, CheckCircle2 } from "lucide-r
 import { storage } from "@/lib/storage";
 import { Stage2Data, defaultStage2Data } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { validateEntry, validateStage2, ValidationError } from "@/lib/validation";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { CheckboxGroup } from "@/components/ui/checkbox-group";
@@ -241,6 +242,7 @@ export default function Stage2Page() {
         stageLabel: 'Marketing Assessment',
         entry,
         stage2: stageData,
+        _hp: '',
         submittedAt: new Date().toISOString(),
       };
       const res = await fetch('/api/stage', {

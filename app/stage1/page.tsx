@@ -9,6 +9,7 @@ import {
   REVENUE_TARGET_OPTIONS,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { validateEntry, validateStage1, ValidationError } from "@/lib/validation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -382,6 +383,7 @@ export default function Stage1Page() {
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Load from localStorage
   useEffect(() => {
@@ -414,11 +416,23 @@ export default function Stage1Page() {
   const currentDisplayStep = step + 1;
 
   const goNext = () => {
+    setFieldErrors({});
+    setError(null);
+
+    // Validate current step
     if (step === 0) {
-      // Save entry and mark complete
+      const errors = validateEntry(entryData as unknown as Record<string, unknown>);
+      if (errors.length > 0) {
+        const errorMap: Record<string, string> = {};
+        errors.forEach(e => { errorMap[e.field] = e.message; });
+        setFieldErrors(errorMap);
+        setError(`Please fill in all required fields (${errors.length} missing)`);
+        return;
+      }
       const status = storage.getStatus();
       storage.setStatus({ ...status, entryComplete: true, lastUpdated: new Date().toISOString() });
     }
+
     if (step < TOTAL_STEPS) {
       setStep(s => s + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -434,7 +448,19 @@ export default function Stage1Page() {
     }
   };
 
+  const [honeypot, setHoneypot] = useState('');
+
   const handleSubmit = async () => {
+    // Validate stage1 data
+    const errors = validateStage1(stageData as unknown as Record<string, unknown>);
+    if (errors.length > 0) {
+      const errorMap: Record<string, string> = {};
+      errors.forEach(e => { errorMap[e.field] = e.message; });
+      setFieldErrors(errorMap);
+      setError(`Please complete the required fields`);
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
@@ -443,6 +469,7 @@ export default function Stage1Page() {
         stageLabel: 'TimeBACK Build',
         entry: entryData,
         stage1: stageData,
+        _hp: honeypot,
         submittedAt: new Date().toISOString(),
       };
       const res = await fetch('/api/stage', {

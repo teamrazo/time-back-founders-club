@@ -5,6 +5,7 @@ import { ChevronLeft, Loader2, Save, CheckCircle2, AlertCircle, ExternalLink, Vi
 import { storage } from "@/lib/storage";
 import { Stage3Data, PlatformEntry, defaultStage3Data, getBudgetTier, BudgetTier } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { validateStage3 } from "@/lib/validation";
 import { Textarea } from "@/components/ui/textarea";
 import { ProgressBar } from "@/components/ProgressBar";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -298,6 +299,7 @@ export default function Stage3Page() {
         stageLabel: 'Access Grant',
         entry,
         stage3: stageData,
+        _hp: '',
         budgetTier,
         submittedAt: new Date().toISOString(),
       };
