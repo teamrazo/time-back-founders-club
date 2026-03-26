@@ -174,19 +174,19 @@ function Step1B({ data, onChange }: { data: Stage1Data; onChange: (d: Partial<St
       {/* Five Pillars */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-slate-200 mb-1">Five Pillars Assessment</h3>
-          <p className="text-xs text-slate-500">Rate each pillar: 1 = Low, 5 = High</p>
+          <h3 className="text-sm font-semibold text-brand-fg mb-1">Five Pillars Assessment</h3>
+          <p className="text-xs text-brand-muted">Rate each pillar: 1 = Low, 5 = High</p>
         </div>
         {PILLARS.map(({ key, label }) => (
-          <div key={key} className="p-4 rounded-lg border border-brand-slate bg-brand-charcoal space-y-3">
-            <div className="text-sm font-semibold text-slate-200">{label}</div>
+          <div key={key} className="p-4 rounded-lg border border-brand-border bg-brand-card space-y-3">
+            <div className="text-sm font-semibold text-brand-fg">{label}</div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs text-slate-500 mb-2">Importance to you</div>
+                <div className="text-xs text-brand-muted mb-2">Importance to you</div>
                 <Slider min={1} max={5} value={data.pillars[key].importance} onChange={v => setPillar(key, 'importance', v)} colorScale />
               </div>
               <div>
-                <div className="text-xs text-slate-500 mb-2">Current satisfaction</div>
+                <div className="text-xs text-brand-muted mb-2">Current satisfaction</div>
                 <Slider min={1} max={5} value={data.pillars[key].satisfaction} onChange={v => setPillar(key, 'satisfaction', v)} colorScale />
               </div>
             </div>
@@ -201,19 +201,19 @@ function Step1B({ data, onChange }: { data: Stage1Data; onChange: (d: Partial<St
         <Select label="Revenue Target (12 months)" value={data.revenueTarget} onChange={e => onChange({ revenueTarget: e.target.value })} options={REVENUE_TARGET_OPTIONS} placeholder="Select target..." />
       </div>
 
-      <div className="p-4 rounded-lg border border-brand-slate bg-brand-charcoal space-y-4">
-        <h3 className="text-sm font-semibold text-slate-200">Time Targets</h3>
+      <div className="p-4 rounded-lg border border-brand-border bg-brand-card space-y-4">
+        <h3 className="text-sm font-semibold text-brand-fg">Time Targets</h3>
         <div>
           <div className="flex justify-between mb-2">
-            <span className="text-sm text-slate-400">Hours/week currently working</span>
-            <span className="text-lg font-bold text-slate-100">{data.hoursCurrently}h</span>
+            <span className="text-sm text-brand-muted-light">Hours/week currently working</span>
+            <span className="text-lg font-bold text-brand-fg">{data.hoursCurrently}h</span>
           </div>
           <Slider min={10} max={80} value={data.hoursCurrently} onChange={v => onChange({ hoursCurrently: v })} />
         </div>
         <div>
           <div className="flex justify-between mb-2">
-            <span className="text-sm text-slate-400">Hours/week you WANT to work</span>
-            <span className="text-lg font-bold text-brand-accent">{data.hoursWanted}h</span>
+            <span className="text-sm text-brand-muted-light">Hours/week you WANT to work</span>
+            <span className="text-lg font-bold text-brand-primary">{data.hoursWanted}h</span>
           </div>
           <Slider min={5} max={60} value={data.hoursWanted} onChange={v => onChange({ hoursWanted: v })} />
         </div>
@@ -282,23 +282,23 @@ function Step1C({ data, onChange }: { data: Stage1Data; onChange: (d: Partial<St
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-slate-200">FREEDOM Scorecard</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Rate 1-10. This builds your baseline FREEDOM Plan.</p>
+            <h3 className="text-sm font-semibold text-brand-fg">FREEDOM Scorecard</h3>
+            <p className="text-xs text-brand-muted mt-0.5">Rate 1-10. This builds your baseline FREEDOM Plan.</p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold" style={{ color: avgScore >= 7 ? '#10B981' : avgScore >= 5 ? '#60A5FA' : '#F59E0B' }}>
               {avgScore}
             </div>
-            <div className="text-xs text-slate-500">/ 10 avg</div>
+            <div className="text-xs text-brand-muted">/ 10 avg</div>
           </div>
         </div>
 
         {FREEDOM_DIMENSIONS.map(({ key, label, desc }) => (
-          <div key={key} className="p-4 rounded-lg border border-brand-slate bg-brand-charcoal">
+          <div key={key} className="p-4 rounded-lg border border-brand-border bg-brand-card">
             <div className="mb-1">
-              <span className="text-sm font-semibold text-slate-200">{label}</span>
+              <span className="text-sm font-semibold text-brand-fg">{label}</span>
             </div>
-            <p className="text-xs text-slate-500 mb-3">{desc}</p>
+            <p className="text-xs text-brand-muted mb-3">{desc}</p>
             <Slider
               min={1}
               max={10}
@@ -333,9 +333,9 @@ function Step1D({ data, onChange }: { data: Stage1Data; onChange: (d: Partial<St
     <div className="space-y-5">
       <SectionHeader tag="Stage 1D" title="Brand & Voice" subtitle="Your voice guides every message, brief, and campaign we build for you." />
 
-      <div className="p-4 rounded-xl border border-brand-accent/20 bg-brand-accent/5">
-        <p className="text-sm text-slate-300 leading-relaxed">
-          <strong className="text-slate-100">Clarity before creativity.</strong> Before we write a single word for your brand,
+      <div className="p-4 rounded-xl border border-brand-primary/15 bg-brand-primary/5">
+        <p className="text-sm text-brand-fg/80 leading-relaxed">
+          <strong className="text-brand-fg">Clarity before creativity.</strong> Before we write a single word for your brand,
           we need to understand how you sound — and how you don&apos;t.
         </p>
       </div>
@@ -476,18 +476,18 @@ export default function Stage1Page() {
   const stepLabels = ['Your Info', 'Business Identity', 'Owner Goals', 'Operator → Engineer', 'Brand & Voice'];
 
   return (
-    <div className="min-h-screen bg-brand-navy">
+    <div className="min-h-screen bg-brand-bg">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-brand-slate/60 bg-brand-navy/95 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push('/')} className="text-slate-500 hover:text-slate-300 transition-colors">
+              <button onClick={() => router.push('/')} className="text-brand-muted hover:text-brand-fg/80 transition-colors">
                 <ChevronLeft size={20} />
               </button>
               <div>
-                <div className="text-xs font-semibold text-brand-accent uppercase tracking-wide">Stage 1</div>
-                <div className="text-sm font-bold text-slate-100">TimeBACK Build</div>
+                <div className="text-xs font-semibold text-brand-primary uppercase tracking-wide">Stage 1</div>
+                <div className="text-sm font-bold text-brand-fg">TimeBACK Build</div>
               </div>
             </div>
             {saved && (
@@ -506,7 +506,7 @@ export default function Stage1Page() {
       </main>
 
       {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-slate/60 bg-brand-navy/95 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           {error && (
             <div className="mb-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
@@ -517,7 +517,7 @@ export default function Stage1Page() {
             <button
               type="button"
               onClick={goBack}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-brand-slate text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-all text-sm font-medium"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-brand-border text-brand-muted-light hover:text-brand-fg hover:border-brand-border-hover transition-all text-sm font-medium"
             >
               <ChevronLeft size={16} />
               {step === 0 ? 'Home' : 'Back'}
@@ -527,7 +527,7 @@ export default function Stage1Page() {
               <button
                 type="button"
                 onClick={goNext}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-accent hover:bg-brand-accent-dark text-white font-semibold text-sm transition-all shadow-lg shadow-brand-accent/25"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-dark text-white font-semibold text-sm transition-all shadow-brand-glow"
               >
                 Continue
                 <ChevronRight size={16} />
@@ -552,7 +552,7 @@ export default function Stage1Page() {
             {Array.from({ length: totalSteps }).map((_, i) => (
               <div key={i} className={cn(
                 "rounded-full transition-all duration-300",
-                i === step ? "w-4 h-1.5 bg-brand-accent" : i < step ? "w-1.5 h-1.5 bg-brand-accent/40" : "w-1.5 h-1.5 bg-brand-slate"
+                i === step ? "w-4 h-1.5 bg-brand-primary" : i < step ? "w-1.5 h-1.5 bg-brand-primary/40" : "w-1.5 h-1.5 bg-brand-slate"
               )} />
             ))}
           </div>

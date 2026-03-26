@@ -26,7 +26,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-brand-navy antialiased">{children}</body>
+      <body className="min-h-screen bg-brand-bg antialiased">{children}</body>
     </html>
   );
 }

@@ -14,12 +14,12 @@ export function ProgressBar({ current, total, label }: ProgressBarProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500">{label || `Step ${current} of ${total}`}</span>
-        <span className="text-xs font-semibold text-brand-accent">{pct}%</span>
+        <span className="text-xs text-brand-muted">{label || `Step ${current} of ${total}`}</span>
+        <span className="text-xs font-semibold text-brand-primary">{pct}%</span>
       </div>
       <div className="h-1.5 w-full rounded-full bg-brand-slate overflow-hidden">
         <div
-          className="h-full rounded-full bg-brand-accent transition-all duration-500"
+          className="h-full rounded-full bg-brand-primary transition-all duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>

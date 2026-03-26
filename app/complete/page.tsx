@@ -13,14 +13,14 @@ const NEXT_STEPS = [
 
 export default function CompletePage() {
   return (
-    <div className="min-h-screen bg-brand-navy flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 py-16">
       <div className="max-w-xl w-full text-center animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-brand-accent flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center">
             <span className="text-white text-sm font-black">R</span>
           </div>
-          <div className="text-sm font-bold text-slate-200">RazoRSharp Networks</div>
+          <div className="text-sm font-bold text-brand-fg">RazoRSharp Networks</div>
         </div>
 
         {/* Icon */}
@@ -30,13 +30,13 @@ export default function CompletePage() {
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-slate-100 mb-3 leading-tight">
+        <h1 className="text-3xl font-bold text-brand-fg mb-3 leading-tight">
           You did it.
         </h1>
-        <p className="text-lg text-slate-300 mb-2 font-medium">
+        <p className="text-lg text-brand-fg/80 mb-2 font-medium">
           You&apos;re on the other side of Operator → Engineer.
         </p>
-        <p className="text-sm text-slate-500 mb-8 leading-relaxed">
+        <p className="text-sm text-brand-muted mb-8 leading-relaxed">
           Your TimeBACK system is being built right now. Everything you submitted is
           already in motion.
         </p>
@@ -50,25 +50,25 @@ export default function CompletePage() {
             {NEXT_STEPS.map((step, i) => (
               <div key={i} className="flex items-start gap-3">
                 <span className="text-base flex-shrink-0">{step.icon}</span>
-                <p className="text-sm text-slate-300 leading-relaxed">{step.text}</p>
+                <p className="text-sm text-brand-fg/80 leading-relaxed">{step.text}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Fast Start CTA */}
-        <div className="p-6 rounded-xl border border-brand-accent/30 bg-brand-accent/5 mb-8">
-          <h3 className="text-sm font-bold text-brand-accent uppercase tracking-wide mb-2">
+        <div className="p-6 rounded-xl border border-brand-primary/15 bg-brand-primary/5 mb-8">
+          <h3 className="text-sm font-bold gradient-text uppercase tracking-wide mb-2">
             ⚡ Fast Start — Don&apos;t Skip This
           </h3>
-          <p className="text-sm text-slate-400 mb-4 leading-relaxed">
+          <p className="text-sm text-brand-muted-light mb-4 leading-relaxed">
             Your system is being built. While we work, complete the Fast Start guide to accelerate your launch and get the most out of your AI Growth Engine from day one.
           </p>
           <a
             href="https://doc.razorsharpnetworks.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-accent hover:bg-brand-accent-dark text-white font-semibold text-sm transition-all shadow-lg shadow-brand-accent/25"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-dark text-white font-semibold text-sm transition-all shadow-brand-glow"
           >
             Start the Fast Start Guide
             <ArrowRight size={16} />
@@ -76,20 +76,20 @@ export default function CompletePage() {
         </div>
 
         {/* Confirmation message */}
-        <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 mb-8">
-          <p className="text-xs text-slate-400 leading-relaxed">
+        <div className="p-4 rounded-lg bg-brand-card/50 border border-brand-border/50 mb-8">
+          <p className="text-xs text-brand-muted-light leading-relaxed">
             📬 A confirmation has been sent to your email. If you don&apos;t see it, check your spam folder. You can always return here to update your information.
           </p>
         </div>
 
         {/* Brand line */}
-        <p className="text-xs text-slate-600 mb-8 italic">
+        <p className="text-xs text-brand-muted mb-8 italic">
           One System. One Flow. One Outcome. FREEDOM
         </p>
 
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium text-sm transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-brand-border hover:bg-brand-card text-brand-fg/80 font-medium text-sm transition-all"
         >
           Back to Dashboard
           <ArrowRight size={16} />

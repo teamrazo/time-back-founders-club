@@ -22,7 +22,7 @@ export function CheckboxGroup({ label, options, value, onChange, hint }: Checkbo
 
   return (
     <div className="flex flex-col gap-2">
-      {label && <label className="text-sm font-medium text-slate-300">{label}</label>}
+      {label && <label className="text-sm font-medium text-brand-fg/80">{label}</label>}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {options.map(opt => (
           <button
@@ -32,13 +32,13 @@ export function CheckboxGroup({ label, options, value, onChange, hint }: Checkbo
             className={cn(
               "flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm text-left transition-all duration-150",
               value.includes(opt)
-                ? "border-brand-accent bg-brand-accent/10 text-brand-accent-light"
-                : "border-brand-slate bg-brand-charcoal text-slate-400 hover:border-slate-500 hover:text-slate-300"
+                ? "border-brand-primary bg-brand-primary/10 text-brand-primary-light"
+                : "border-brand-border bg-brand-card text-brand-muted-light hover:border-brand-border-hover hover:text-brand-fg/80"
             )}
           >
             <div className={cn(
               "w-4 h-4 rounded flex-shrink-0 border flex items-center justify-center transition-all",
-              value.includes(opt) ? "bg-brand-accent border-brand-accent" : "border-brand-slate"
+              value.includes(opt) ? "bg-brand-primary border-brand-primary" : "border-brand-border"
             )}>
               {value.includes(opt) && <Check size={10} className="text-white" />}
             </div>
@@ -46,7 +46,7 @@ export function CheckboxGroup({ label, options, value, onChange, hint }: Checkbo
           </button>
         ))}
       </div>
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && <p className="text-xs text-brand-muted">{hint}</p>}
     </div>
   );
 }

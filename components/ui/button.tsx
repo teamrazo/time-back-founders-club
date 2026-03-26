@@ -12,13 +12,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-brand-accent text-white hover:bg-brand-accent-dark shadow-lg shadow-brand-accent/25 hover:shadow-brand-accent/40",
+          "bg-brand-primary text-white hover:bg-brand-primary-dark shadow-brand-glow hover:shadow-brand-glow/40",
         outline:
-          "border border-brand-slate text-slate-300 hover:text-slate-100 hover:border-slate-500 bg-transparent",
+          "border border-brand-border text-brand-fg/80 hover:text-brand-fg hover:border-brand-border-hover bg-transparent",
         success:
           "bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-500/25",
         ghost:
-          "bg-transparent hover:bg-brand-slate/40 text-slate-300",
+          "bg-transparent hover:bg-brand-slate/40 text-brand-fg/80",
       },
       size: {
         default: "px-6 py-3",

@@ -54,14 +54,14 @@ function StatusBadge({ status }: { status: StageStatus }) {
   }
   if (status === "in-progress") {
     return (
-      <span className="flex items-center gap-1 text-xs font-semibold text-brand-accent">
+      <span className="flex items-center gap-1 text-xs font-semibold text-brand-primary">
         <Clock size={14} />
         In Progress
       </span>
     );
   }
   return (
-    <span className="flex items-center gap-1 text-xs text-slate-500">
+    <span className="flex items-center gap-1 text-xs text-brand-muted">
       <Circle size={14} />
       Not Started
     </span>
@@ -73,22 +73,22 @@ function getColorClasses(color: string, status: StageStatus) {
   const isActive = status === "in-progress";
   const map: Record<string, { border: string; bg: string; icon: string; btn: string }> = {
     blue: {
-      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-accent/60" : "border-brand-slate hover:border-brand-accent/40",
-      bg: isComplete ? "bg-emerald-500/5" : isActive ? "bg-brand-accent/5" : "bg-brand-charcoal hover:bg-brand-charcoal/80",
-      icon: isComplete ? "text-emerald-400" : "text-brand-accent",
-      btn: "bg-brand-accent hover:bg-brand-accent-dark text-white",
+      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-primary/40" : "border-brand-border hover:border-brand-primary/30",
+      bg: isComplete ? "border-emerald-500/5 bg-brand-card" : isActive ? "bg-brand-primary/5" : "bg-brand-card hover:bg-brand-card-hover",
+      icon: isComplete ? "text-emerald-400" : "text-brand-primary",
+      btn: "bg-brand-gradient hover:opacity-90 text-white shadow-brand-glow",
     },
     emerald: {
-      border: isComplete ? "border-emerald-500/40" : isActive ? "border-emerald-400/60" : "border-brand-slate hover:border-emerald-400/40",
-      bg: isComplete ? "bg-emerald-500/5" : isActive ? "bg-emerald-500/5" : "bg-brand-charcoal hover:bg-brand-charcoal/80",
-      icon: isComplete ? "text-emerald-400" : "text-emerald-400",
-      btn: "bg-emerald-500 hover:bg-emerald-600 text-white",
+      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-accent/40" : "border-brand-border hover:border-brand-accent/30",
+      bg: isComplete ? "border-emerald-500/5 bg-brand-card" : isActive ? "bg-brand-accent/5" : "bg-brand-card hover:bg-brand-card-hover",
+      icon: isComplete ? "text-emerald-400" : "text-brand-accent",
+      btn: "bg-accent-gradient hover:opacity-90 text-white shadow-accent-glow",
     },
     amber: {
-      border: isComplete ? "border-emerald-500/40" : isActive ? "border-amber-400/60" : "border-brand-slate hover:border-amber-400/40",
-      bg: isComplete ? "bg-emerald-500/5" : isActive ? "bg-amber-500/5" : "bg-brand-charcoal hover:bg-brand-charcoal/80",
-      icon: isComplete ? "text-emerald-400" : "text-amber-400",
-      btn: "bg-amber-500 hover:bg-amber-600 text-white",
+      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-secondary/40" : "border-brand-border hover:border-brand-secondary/30",
+      bg: isComplete ? "border-emerald-500/5 bg-brand-card" : isActive ? "bg-brand-secondary/5" : "bg-brand-card hover:bg-brand-card-hover",
+      icon: isComplete ? "text-emerald-400" : "text-brand-secondary",
+      btn: "bg-brand-gradient hover:opacity-90 text-white shadow-brand-glow",
     },
   };
   return map[color] || map.blue;
@@ -109,7 +109,7 @@ const STAGE_CONFIRMATIONS: Record<string, string> = {
 
 export default function HomePageWrapper() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-brand-navy" />}>
+    <Suspense fallback={<div className="min-h-screen bg-brand-bg" />}>
       <HomePage />
     </Suspense>
   );
@@ -143,7 +143,7 @@ function HomePage() {
   const progress = status ? overallProgress(status) : 0;
 
   return (
-    <div className="min-h-screen bg-brand-navy">
+    <div className="min-h-screen bg-brand-bg">
       {/* Confirmation Toast */}
       {toast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4 animate-fade-in">
@@ -156,15 +156,15 @@ function HomePage() {
         </div>
       )}
       {/* Header */}
-      <header className="border-b border-brand-slate/60">
+      <header className="border-b border-brand-border/60">
         <div className="max-w-4xl mx-auto px-4 py-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-accent flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center flex-shrink-0">
               <span className="text-white text-sm font-black">R</span>
             </div>
             <div>
-              <div className="text-sm font-bold text-slate-200 tracking-wide">RazoRSharp Networks</div>
-              <div className="text-xs text-slate-500">One System. One Flow. One Outcome. FREEDOM</div>
+              <div className="text-sm font-bold text-brand-fg tracking-wide">RazoRSharp Networks</div>
+              <div className="text-xs text-brand-muted">One System. One Flow. One Outcome. FREEDOM</div>
             </div>
           </div>
         </div>
@@ -179,24 +179,24 @@ function HomePage() {
                 <CheckCircle2 size={16} />
                 Onboarding Complete
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-4 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold text-brand-fg mb-4 leading-tight">
                 You&apos;re on the other side of Operator → Engineer.
               </h1>
-              <p className="text-slate-400 max-w-xl mx-auto leading-relaxed">
+              <p className="text-brand-muted-light max-w-xl mx-auto leading-relaxed">
                 Your TimeBACK system is being built. Daily coaching briefs start within 48 hours.
                 Welcome to the system.
               </p>
             </>
           ) : (
             <>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-accent/10 border border-brand-accent/30 text-brand-accent text-sm font-semibold mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-primary/10 border border-brand-primary/15 text-brand-primary text-sm font-semibold mb-4">
                 Client Onboarding
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-4 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold text-brand-fg mb-4 leading-tight">
                 Build a system that works<br className="hidden sm:block" /> while you don&apos;t.
               </h1>
-              <p className="text-slate-400 max-w-xl mx-auto leading-relaxed">
-                This isn&apos;t a form. It&apos;s the first step from <strong className="text-slate-200">Operator to Engineer.</strong><br />
+              <p className="text-brand-muted-light max-w-xl mx-auto leading-relaxed">
+                This isn&apos;t a form. It&apos;s the first step from <strong className="text-brand-fg">Operator to Engineer.</strong><br />
                 Complete it once. We handle the rest.
               </p>
             </>
@@ -205,18 +205,18 @@ function HomePage() {
 
         {/* Overall progress */}
         {progress > 0 && !allComplete && (
-          <div className="mb-8 p-4 rounded-xl border border-brand-slate bg-brand-charcoal animate-slide-up">
+          <div className="mb-8 p-4 rounded-xl border border-brand-border bg-brand-card animate-slide-up">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-300">Overall Progress</span>
-              <span className="text-sm font-bold text-brand-accent">{progress}%</span>
+              <span className="text-sm font-medium text-brand-fg/80">Overall Progress</span>
+              <span className="text-sm font-bold text-brand-primary">{progress}%</span>
             </div>
             <div className="h-2 w-full rounded-full bg-brand-slate overflow-hidden">
               <div
-                className="h-full rounded-full bg-brand-accent transition-all duration-700"
+                className="h-full rounded-full bg-brand-primary transition-all duration-700"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-brand-muted mt-2">
               {progress < 50
                 ? "You're getting started. The hardest part is beginning."
                 : progress < 100
@@ -258,12 +258,12 @@ function HomePage() {
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-slate-500 font-medium">Stage {stage.number}</span>
+                          <span className="text-xs text-brand-muted font-medium">Stage {stage.number}</span>
                           <StatusBadge status={stageStatus} />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-100 mt-0.5">{stage.title}</h3>
-                        <p className="text-sm text-slate-400 mt-1">{stage.subtitle}</p>
-                        <p className="text-xs text-slate-600 mt-1.5">{stage.time} · {stage.priority}</p>
+                        <h3 className="text-lg font-bold text-brand-fg mt-0.5">{stage.title}</h3>
+                        <p className="text-sm text-brand-muted-light mt-1">{stage.subtitle}</p>
+                        <p className="text-xs text-brand-muted mt-1.5">{stage.time} · {stage.priority}</p>
                       </div>
 
                       {/* CTA */}
@@ -296,7 +296,7 @@ function HomePage() {
                 "📊 Daily coaching briefs start within 48 hours",
                 "🔧 Your platforms are being connected",
               ].map((item, i) => (
-                <p key={i} className="text-sm text-slate-300">{item}</p>
+                <p key={i} className="text-sm text-brand-fg/80">{item}</p>
               ))}
             </div>
           </div>
@@ -305,7 +305,7 @@ function HomePage() {
         {/* Bottom brand message */}
         {!allComplete && (
           <div className="mt-10 text-center">
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-brand-muted leading-relaxed">
               Each stage is independent — complete them in any order.<br />
               Your progress saves automatically. Pick up where you left off anytime.
             </p>

@@ -46,13 +46,13 @@ export function Slider({
     <div className={cn("flex flex-col gap-2", className)}>
       {(label || showValue) && (
         <div className="flex items-center justify-between">
-          {label && <span className="text-sm font-medium text-slate-300">{label}</span>}
+          {label && <span className="text-sm font-medium text-brand-fg/80">{label}</span>}
           {showValue && (
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold tabular-nums" style={{ color }}>
                 {value}
               </span>
-              <span className="text-xs text-slate-500">/{max}</span>
+              <span className="text-xs text-brand-muted">/{max}</span>
               {colorScale && (
                 <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: color + "20", color }}>
                   {getScoreLabel(value)}
@@ -76,7 +76,7 @@ export function Slider({
           className="w-full cursor-pointer"
         />
       </div>
-      <div className="flex justify-between text-xs text-slate-600">
+      <div className="flex justify-between text-xs text-brand-muted">
         <span>{min}</span>
         <span>{Math.round((min + max) / 2)}</span>
         <span>{max}</span>

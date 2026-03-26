@@ -132,23 +132,23 @@ function PlatformCard({
       "rounded-xl border p-5 transition-all duration-200",
       entry.status === 'granted' ? "border-emerald-500/40 bg-emerald-500/5" :
       entry.status === 'need-help' ? "border-amber-400/40 bg-amber-400/5" :
-      entry.status === 'na' ? "border-brand-slate/50 bg-brand-charcoal/50 opacity-60" :
-      "border-brand-slate bg-brand-charcoal"
+      entry.status === 'na' ? "border-brand-border/50 bg-brand-card/50 opacity-60" :
+      "border-brand-border bg-brand-card"
     )}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1">
-          <h4 className="font-semibold text-slate-100">{platform.name}</h4>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{platform.why}</p>
+          <h4 className="font-semibold text-brand-fg">{platform.name}</h4>
+          <p className="text-xs text-brand-muted mt-1 leading-relaxed">{platform.why}</p>
         </div>
         {entry.status === 'granted' && <CheckCircle2 size={20} className="text-emerald-400 flex-shrink-0 mt-0.5" />}
         {entry.status === 'need-help' && <AlertCircle size={20} className="text-amber-400 flex-shrink-0 mt-0.5" />}
       </div>
 
       {/* Access email */}
-      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-brand-navy/60 border border-brand-slate mb-4">
-        <ExternalLink size={12} className="text-slate-500 flex-shrink-0" />
-        <span className="text-xs text-slate-500">Grant access to:</span>
-        <span className="text-xs font-mono text-brand-accent-light">{platform.email}</span>
+      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-brand-bg/60 border border-brand-border mb-4">
+        <ExternalLink size={12} className="text-brand-muted flex-shrink-0" />
+        <span className="text-xs text-brand-muted">Grant access to:</span>
+        <span className="text-xs font-mono text-brand-primary-light">{platform.email}</span>
       </div>
 
       {/* Loom placeholder */}
@@ -157,15 +157,15 @@ function PlatformCard({
           href={platform.loomUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-xs text-brand-accent hover:text-brand-accent-light transition-colors mb-4"
+          className="flex items-center gap-2 text-xs text-brand-primary hover:text-brand-primary-light transition-colors mb-4"
         >
           <Video size={14} />
           Watch walkthrough video (2-3 min)
         </a>
       ) : (
-        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-brand-slate/30 border border-brand-slate/50 mb-4">
-          <Video size={12} className="text-slate-600" />
-          <span className="text-xs text-slate-600">Walkthrough video coming soon</span>
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-brand-slate/30 border border-brand-border/50 mb-4">
+          <Video size={12} className="text-brand-muted" />
+          <span className="text-xs text-brand-muted">Walkthrough video coming soon</span>
         </div>
       )}
 
@@ -181,8 +181,8 @@ function PlatformCard({
               entry.status === opt.value
                 ? opt.color === 'emerald' ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
                   : opt.color === 'amber' ? "bg-amber-400/20 border-amber-400/50 text-amber-300"
-                  : "bg-brand-slate border-slate-500 text-slate-300"
-                : "bg-transparent border-brand-slate text-slate-500 hover:border-slate-500 hover:text-slate-400"
+                  : "bg-brand-slate border-slate-500 text-brand-fg/80"
+                : "bg-transparent border-brand-border text-brand-muted hover:border-brand-border-hover hover:text-brand-muted-light"
             )}
           >
             {opt.label}
@@ -224,10 +224,10 @@ function TierSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-slate-100">{title}</h3>
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <h3 className="font-bold text-brand-fg">{title}</h3>
+          <p className="text-xs text-brand-muted mt-0.5">{subtitle}</p>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-slate text-slate-300">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-slate text-brand-fg/80">
           {granted}/{total} granted
         </span>
       </div>
@@ -325,17 +325,17 @@ export default function Stage3Page() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-navy">
-      <header className="sticky top-0 z-50 border-b border-brand-slate/60 bg-brand-navy/95 backdrop-blur-md">
+    <div className="min-h-screen bg-brand-bg">
+      <header className="sticky top-0 z-50 border-b border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push('/')} className="text-slate-500 hover:text-slate-300 transition-colors">
+              <button onClick={() => router.push('/')} className="text-brand-muted hover:text-brand-fg/80 transition-colors">
                 <ChevronLeft size={20} />
               </button>
               <div>
                 <div className="text-xs font-semibold text-amber-400 uppercase tracking-wide">Stage 3</div>
-                <div className="text-sm font-bold text-slate-100">Access Grant</div>
+                <div className="text-sm font-bold text-brand-fg">Access Grant</div>
               </div>
             </div>
             {saved && (
@@ -396,9 +396,9 @@ export default function Stage3Page() {
 
         {/* Budget note if only tier 1 showing */}
         {!showTier2 && (
-          <div className="p-4 rounded-xl border border-brand-slate bg-brand-charcoal">
-            <p className="text-sm text-slate-500">
-              <strong className="text-slate-400">Advertising & Advanced platforms</strong> become available when your
+          <div className="p-4 rounded-xl border border-brand-border bg-brand-card">
+            <p className="text-sm text-brand-muted">
+              <strong className="text-brand-muted-light">Advertising & Advanced platforms</strong> become available when your
               budget reaches $500/mo or includes paid ad services. We&apos;ll revisit these as your investment grows.
             </p>
           </div>
@@ -406,7 +406,7 @@ export default function Stage3Page() {
       </main>
 
       {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-slate/60 bg-brand-navy/95 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           {error && (
             <div className="mb-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">{error}</div>
@@ -415,7 +415,7 @@ export default function Stage3Page() {
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-brand-slate text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-all text-sm font-medium"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-brand-border text-brand-muted-light hover:text-brand-fg hover:border-brand-border-hover transition-all text-sm font-medium"
             >
               <ChevronLeft size={16} />
               Home
@@ -434,7 +434,7 @@ export default function Stage3Page() {
               )}
             </button>
           </div>
-          <p className="text-center text-xs text-slate-600 mt-2">
+          <p className="text-center text-xs text-brand-muted mt-2">
             You can submit with partial access and update later. We&apos;ll follow up on &quot;Need Help&quot; items.
           </p>
         </div>

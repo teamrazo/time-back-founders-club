@@ -161,13 +161,13 @@ function Step2D({ data, onChange }: { data: Stage2Data; onChange: (d: Partial<St
           rows={3}
         />
       )}
-      <div className="p-4 rounded-lg border border-brand-slate bg-brand-charcoal">
+      <div className="p-4 rounded-lg border border-brand-border bg-brand-card">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-sm font-semibold text-slate-200">Readiness to Invest in Growth</div>
-            <div className="text-xs text-slate-500 mt-0.5">1 = Not ready yet · 10 = Let&apos;s go right now</div>
+            <div className="text-sm font-semibold text-brand-fg">Readiness to Invest in Growth</div>
+            <div className="text-xs text-brand-muted mt-0.5">1 = Not ready yet · 10 = Let&apos;s go right now</div>
           </div>
-          <span className="text-3xl font-bold text-brand-accent">{data.readinessScore}</span>
+          <span className="text-3xl font-bold text-brand-primary">{data.readinessScore}</span>
         </div>
         <Slider min={1} max={10} value={data.readinessScore} onChange={v => onChange({ readinessScore: v })} colorScale />
       </div>
@@ -272,17 +272,17 @@ export default function Stage2Page() {
   const stepLabels = ['Current State', 'Target Market', 'Where You\'re Going', 'Experience & Readiness'];
 
   return (
-    <div className="min-h-screen bg-brand-navy">
-      <header className="sticky top-0 z-50 border-b border-brand-slate/60 bg-brand-navy/95 backdrop-blur-md">
+    <div className="min-h-screen bg-brand-bg">
+      <header className="sticky top-0 z-50 border-b border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push('/')} className="text-slate-500 hover:text-slate-300 transition-colors">
+              <button onClick={() => router.push('/')} className="text-brand-muted hover:text-brand-fg/80 transition-colors">
                 <ChevronLeft size={20} />
               </button>
               <div>
                 <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wide">Stage 2</div>
-                <div className="text-sm font-bold text-slate-100">Marketing Assessment</div>
+                <div className="text-sm font-bold text-brand-fg">Marketing Assessment</div>
               </div>
             </div>
             {saved && (
@@ -300,7 +300,7 @@ export default function Stage2Page() {
         {renderStep()}
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-slate/60 bg-brand-navy/95 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-border/60 bg-brand-bg/95 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-4">
           {error && (
             <div className="mb-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">{error}</div>
@@ -309,7 +309,7 @@ export default function Stage2Page() {
             <button
               type="button"
               onClick={goBack}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-brand-slate text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-all text-sm font-medium"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-brand-border text-brand-muted-light hover:text-brand-fg hover:border-brand-border-hover transition-all text-sm font-medium"
             >
               <ChevronLeft size={16} />
               {step === 1 ? 'Home' : 'Back'}
