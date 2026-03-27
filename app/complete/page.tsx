@@ -16,17 +16,13 @@ export default function CompletePage() {
     <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 py-16">
       <div className="max-w-xl w-full text-center animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-brand-card flex items-center justify-center border border-brand-border/60 shadow-card-glow overflow-hidden">
-            {/* Purple RSN logo */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt="RazoRSharp Networks"
-              className="w-full h-full object-contain p-1"
-            />
-          </div>
-          <div className="text-sm font-bold text-brand-fg">RazoRSharp Networks</div>
+        <div className="flex items-center justify-center mb-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="RazoRSharp Networks"
+            className="h-8 w-auto"
+          />
         </div>
 
         {/* Icon */}
