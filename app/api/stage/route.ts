@@ -4,6 +4,7 @@ import path from "path";
 import { existsSync } from "fs";
 import { validateSubmission } from "@/lib/validation";
 import { upsertContactAndTag } from "@/lib/ghl";
+import { put, list, get } from "@vercel/blob";
 
 const DATA_DIR =
   process.env.DATA_DIR ||
@@ -13,6 +14,84 @@ const DATA_DIR =
 
 const WEBHOOK_URL = process.env.WEBHOOK_URL || "";
 const GHL_ENABLED = Boolean(process.env.GHL_PRIVATE_TOKEN && process.env.GHL_LOCATION_ID);
+const BLOB_ENABLED = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+
+function safePathSegment(input: string) {
+  return String(input || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120);
+}
+
+async function streamToString(stream: ReadableStream<Uint8Array>) {
+  const res = new Response(stream);
+  return await res.text();
+}
+
+async function blobPutJson(pathname: string, data: unknown) {
+  return await put(pathname, JSON.stringify(data, null, 2), {
+    access: "private",
+    contentType: "application/json",
+  });
+}
+
+async function blobGetJson(pathname: string) {
+  const result = await get(pathname, { access: "private", useCache: false });
+  if (!result || result.statusCode !== 200 || !result.stream) return null;
+  const text = await streamToString(result.stream);
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+async function maybeCreateMergedIntake(prefix: string) {
+  // Looks for the newest stage1/stage2/stage3 JSON blobs under the same client folder,
+  // then writes a merged "full" intake blob.
+  const { blobs } = await list({ prefix, limit: 1000 });
+
+  const newest: Record<string, { pathname: string; uploadedAt: Date }> = {};
+  for (const b of blobs) {
+    const m = b.pathname.match(/\/(stage1|stage2|stage3)-/);
+    if (!m) continue;
+    const stageKey = m[1];
+    const existing = newest[stageKey];
+    if (!existing || b.uploadedAt > existing.uploadedAt) {
+      newest[stageKey] = { pathname: b.pathname, uploadedAt: b.uploadedAt };
+    }
+  }
+
+  if (!newest.stage1 || !newest.stage2 || !newest.stage3) return null;
+
+  const [s1, s2, s3] = await Promise.all([
+    blobGetJson(newest.stage1.pathname),
+    blobGetJson(newest.stage2.pathname),
+    blobGetJson(newest.stage3.pathname),
+  ]);
+
+  if (!s1 || !s2 || !s3) return null;
+
+  const merged = {
+    mergedAt: new Date().toISOString(),
+    stage1: s1,
+    stage2: s2,
+    stage3: s3,
+    sources: {
+      stage1Blob: newest.stage1.pathname,
+      stage2Blob: newest.stage2.pathname,
+      stage3Blob: newest.stage3.pathname,
+    },
+  };
+
+  const fullId = `full-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const fullPath = `${prefix}${fullId}.json`;
+  const fullBlob = await blobPutJson(fullPath, merged);
+
+  return { fullPathname: fullBlob.pathname, fullUrl: fullBlob.url };
+}
 
 // Simple in-memory rate limiter (per IP, 10 submissions per 15 min)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -83,6 +162,31 @@ export async function POST(req: NextRequest) {
     const logPath = path.join(DATA_DIR, "onboarding.jsonl");
     await appendFile(logPath, JSON.stringify(submission) + "\n", "utf-8");
 
+    // Durable storage: write each stage intake to Vercel Blob (private)
+    let blobPathname: string | null = null;
+    let fullIntakePathname: string | null = null;
+
+    if (BLOB_ENABLED && submission.contact.email) {
+      try {
+        const emailSafe = safePathSegment(submission.contact.email);
+        const prefix = `intakes/${emailSafe}/`;
+        const stageBlobPath = `${prefix}${id}.json`;
+
+        const blob = await blobPutJson(stageBlobPath, submission);
+        blobPathname = blob.pathname;
+        (submission as any).blob = { url: blob.url, pathname: blob.pathname, downloadUrl: blob.downloadUrl };
+
+        // If we have all three stages, create a merged full intake blob
+        const merged = await maybeCreateMergedIntake(prefix);
+        if (merged?.fullPathname) {
+          fullIntakePathname = merged.fullPathname;
+          (submission as any).fullIntake = merged;
+        }
+      } catch (blobErr) {
+        console.warn("Blob write failed:", blobErr);
+      }
+    }
+
     // Sync to GHL via API (preferred) if enabled
     if (GHL_ENABLED) {
       try {
@@ -119,7 +223,12 @@ export async function POST(req: NextRequest) {
             phone: submission.contact.phone,
             companyName: submission.contact.company,
             tagsToAdd,
-            note: stageNoteMap[String(stage)] || `Completed onboarding ${stage}`,
+            note: [
+              stageNoteMap[String(stage)] || `Completed onboarding ${stage}`,
+              blobPathname ? `Intake Blob (stage): ${blobPathname}` : null,
+              fullIntakePathname ? `Intake Blob (full): ${fullIntakePathname}` : null,
+              `Submission ID: ${id}`,
+            ].filter(Boolean).join("\n"),
           });
         }
       } catch (ghlErr) {
@@ -149,7 +258,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, id, stage, ghlEnabled: GHL_ENABLED }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        id,
+        stage,
+        ghlEnabled: GHL_ENABLED,
+        blobEnabled: BLOB_ENABLED,
+        blobPathname,
+        fullIntakePathname,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("Stage submission error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
