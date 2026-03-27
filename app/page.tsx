@@ -1,320 +1,487 @@
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Clock, Circle, ChevronRight, Zap, Target, Key, X } from "lucide-react";
-import { storage } from "@/lib/storage";
-import { OnboardingStatus, StageStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import {
+  Zap, Shield, TrendingUp, Clock, ChevronRight,
+  CheckCircle2, Sparkles, MessageSquare, BarChart3,
+  Users, ArrowRight, ChevronDown
+} from "lucide-react";
+import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
-const STAGES = [
-  {
-    id: "stage1" as const,
-    number: 1,
-    title: "TimeBACK Build",
-    subtitle: "System profile, goals, FREEDOM scorecard & brand voice",
-    time: "8–12 minutes",
-    href: "/stage1",
-    icon: Zap,
-    priority: "Highest priority — feeds your AI Growth Engine immediately",
-    color: "blue",
-  },
-  {
-    id: "stage2" as const,
-    number: 2,
-    title: "Marketing Assessment",
-    subtitle: "Current state, target market, goals & readiness",
-    time: "5–8 minutes",
-    href: "/stage2",
-    icon: Target,
-    priority: "Informs your strategy and campaign direction",
-    color: "emerald",
-  },
-  {
-    id: "stage3" as const,
-    number: 3,
-    title: "Access Grant",
-    subtitle: "Platform credentials & admin access for campaign execution",
-    time: "15–30 minutes",
-    href: "/stage3",
-    icon: Key,
-    priority: "Enables project execution — complete when ready",
-    color: "amber",
-  },
-];
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
-function StatusBadge({ status }: { status: StageStatus }) {
-  if (status === "complete") {
-    return (
-      <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
-        <CheckCircle2 size={14} />
-        Complete
-      </span>
-    );
+// ─── Step 1: Info Capture ───────────────────────────────────────────────────
+function StepInfo({ onNext }: { onNext: (data: {
+  fullName: string; email: string; phone: string; companyName: string;
+}) => void }) {
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", companyName: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [honeypot, setHoneypot] = useState("");
+
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!form.fullName.trim()) e.fullName = "Required";
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Valid email required";
+    if (!form.phone.trim() || form.phone.replace(/\D/g, "").length < 7) e.phone = "Valid phone required";
+    if (!form.companyName.trim()) e.companyName = "Required";
+    setErrors(e);
+    return Object.keys(e).length === 0;
   }
-  if (status === "in-progress") {
-    return (
-      <span className="flex items-center gap-1 text-xs font-semibold text-brand-primary">
-        <Clock size={14} />
-        In Progress
-      </span>
-    );
-  }
+
   return (
-    <span className="flex items-center gap-1 text-xs text-brand-muted">
-      <Circle size={14} />
-      Not Started
-    </span>
+    <div className="space-y-5">
+      <div>
+        <h3 className="text-xl font-bold text-brand-fg mb-1">Join the Founders Club</h3>
+        <p className="text-brand-muted text-sm">Tell us about you and your business.</p>
+      </div>
+
+      {(["fullName", "email", "phone", "companyName"] as const).map((field) => (
+        <div key={field}>
+          <label className="block text-sm font-medium text-brand-fg mb-1.5">
+            {{ fullName: "Full Name", email: "Email", phone: "Phone", companyName: "Company Name" }[field]}
+          </label>
+          <input
+            type={field === "email" ? "email" : field === "phone" ? "tel" : "text"}
+            value={form[field]}
+            onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+            className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-3 text-brand-fg placeholder:text-brand-muted/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 outline-none transition-all"
+            placeholder={{ fullName: "Jesse Razo", email: "you@company.com", phone: "(555) 123-4567", companyName: "Acme Inc" }[field]}
+          />
+          {errors[field] && <p className="text-brand-red text-xs mt-1">{errors[field]}</p>}
+        </div>
+      ))}
+
+      {/* Honeypot */}
+      <input type="text" name="_hp" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} className="hidden" tabIndex={-1} autoComplete="off" />
+
+      <button
+        onClick={() => { if (honeypot) return; if (validate()) onNext(form); }}
+        className="w-full py-3.5 rounded-lg bg-brand-gradient text-white font-semibold text-base shadow-brand-glow hover:opacity-90 transition-all flex items-center justify-center gap-2"
+      >
+        Continue to Payment <ArrowRight size={18} />
+      </button>
+    </div>
   );
 }
 
-function getColorClasses(color: string, status: StageStatus) {
-  const isComplete = status === "complete";
-  const isActive = status === "in-progress";
-  const map: Record<string, { border: string; bg: string; icon: string; btn: string }> = {
-    blue: {
-      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-primary/40" : "border-brand-border hover:border-brand-primary/30",
-      bg: isComplete ? "border-emerald-500/5 bg-brand-card" : isActive ? "bg-brand-primary/5" : "bg-brand-card hover:bg-brand-card-hover",
-      icon: isComplete ? "text-emerald-400" : "text-brand-primary",
-      btn: "bg-brand-gradient hover:opacity-90 text-white shadow-brand-glow",
-    },
-    emerald: {
-      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-accent/40" : "border-brand-border hover:border-brand-accent/30",
-      bg: isComplete ? "border-emerald-500/5 bg-brand-card" : isActive ? "bg-brand-accent/5" : "bg-brand-card hover:bg-brand-card-hover",
-      icon: isComplete ? "text-emerald-400" : "text-brand-accent",
-      btn: "bg-accent-gradient hover:opacity-90 text-white shadow-accent-glow",
-    },
-    amber: {
-      border: isComplete ? "border-emerald-500/40" : isActive ? "border-brand-secondary/40" : "border-brand-border hover:border-brand-secondary/30",
-      bg: isComplete ? "border-emerald-500/5 bg-brand-card" : isActive ? "bg-brand-secondary/5" : "bg-brand-card hover:bg-brand-card-hover",
-      icon: isComplete ? "text-emerald-400" : "text-brand-secondary",
-      btn: "bg-brand-gradient hover:opacity-90 text-white shadow-brand-glow",
-    },
-  };
-  return map[color] || map.blue;
-}
+// ─── Step 2: Payment ────────────────────────────────────────────────────────
+function CheckoutForm({ onSuccess, customerData }: {
+  onSuccess: (paymentIntentId: string) => void;
+  customerData: { fullName: string; email: string; phone: string; companyName: string; customerId: string };
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-function overallProgress(status: OnboardingStatus): number {
-  const stages = [status.stage1, status.stage2, status.stage3];
-  const complete = stages.filter(s => s === "complete").length;
-  const partial = stages.filter(s => s === "in-progress").length;
-  return Math.round(((complete + partial * 0.5) / 3) * 100);
-}
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setLoading(true);
+    setError("");
 
-const STAGE_CONFIRMATIONS: Record<string, string> = {
-  stage1: "✅ TimeBACK Build received! Your AI Growth Engine profile is being created.",
-  stage2: "✅ Assessment received! Your strategy is being mapped.",
-  stage3: "✅ Access confirmed! Your platforms are being connected.",
-};
+    const result = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: window.location.href },
+      redirect: "if_required",
+    });
 
-export default function HomePageWrapper() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-brand-bg" />}>
-      <HomePage />
-    </Suspense>
-  );
-}
-
-function HomePage() {
-  const [status, setStatus] = useState<OnboardingStatus | null>(null);
-  const [entryComplete, setEntryComplete] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const s = storage.getStatus();
-    setStatus(s);
-    setEntryComplete(s.entryComplete);
-
-    // Check for stage completion redirect
-    for (const key of ["stage1", "stage2", "stage3"]) {
-      if (searchParams.get(key) === "complete" && STAGE_CONFIRMATIONS[key]) {
-        setToast(STAGE_CONFIRMATIONS[key]);
-        // Clear URL params without reload
-        window.history.replaceState({}, "", "/");
-        // Auto-dismiss after 8 seconds
-        setTimeout(() => setToast(null), 8000);
-        break;
-      }
+    if (result.error) {
+      setError(result.error.message || "Payment failed. Please try again.");
+      setLoading(false);
+    } else if (result.paymentIntent?.status === "succeeded") {
+      onSuccess(result.paymentIntent.id);
     }
-  }, [searchParams]);
-
-  const allComplete = status?.stage1 === "complete" && status?.stage2 === "complete" && status?.stage3 === "complete";
-  const progress = status ? overallProgress(status) : 0;
+  }
 
   return (
-    <div className="min-h-screen bg-brand-bg">
-      {/* Confirmation Toast */}
-      {toast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4 animate-fade-in">
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-5 py-4 flex items-start gap-3 shadow-2xl shadow-emerald-500/10 backdrop-blur-sm">
-            <p className="text-sm text-emerald-300 font-medium flex-1 leading-relaxed">{toast}</p>
-            <button onClick={() => setToast(null)} className="text-emerald-400/60 hover:text-emerald-300 flex-shrink-0 mt-0.5">
-              <X size={16} />
-            </button>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div>
+        <h3 className="text-xl font-bold text-brand-fg mb-1">Activate Your Pilot</h3>
+        <p className="text-brand-muted text-sm">$9 today. Your $20 AI wallet loads immediately.</p>
+      </div>
+
+      <div className="glass-card rounded-xl p-4 space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-brand-fg font-medium">TimeBACK Founders Club</span>
+          <span className="text-brand-primary font-bold text-lg">$9</span>
+        </div>
+        <div className="border-t border-brand-border pt-3 space-y-1.5">
+          <div className="flex items-center gap-2 text-sm text-brand-muted">
+            <CheckCircle2 size={14} className="text-brand-green shrink-0" />
+            <span>$20 AI wallet — loaded instantly</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-brand-muted">
+            <CheckCircle2 size={14} className="text-brand-green shrink-0" />
+            <span>Private Slack channel with CATO AI</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-brand-muted">
+            <CheckCircle2 size={14} className="text-brand-green shrink-0" />
+            <span>Custom FREEDOM Diagnostic</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-brand-muted">
+            <CheckCircle2 size={14} className="text-brand-green shrink-0" />
+            <span>Daily coaching briefs</span>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-brand-border p-4 bg-brand-card">
+        <PaymentElement options={{ layout: "tabs" }} />
+      </div>
+
+      {error && (
+        <div className="bg-brand-red/10 border border-brand-red/20 rounded-lg p-3 text-brand-red text-sm">{error}</div>
       )}
-      {/* Header */}
-      <header className="border-b border-brand-border/60">
-        <div className="max-w-4xl mx-auto px-4 py-5">
-          <div className="flex items-center gap-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt="RazoRSharp Networks"
-              className="h-8 w-auto flex-shrink-0"
-            />
-            <div className="hidden sm:block h-6 w-px bg-brand-border/60" />
-            <div className="hidden sm:block">
-              <div className="text-xs text-brand-muted font-medium">One System. One Flow. One Outcome. <span className="gradient-text font-semibold">FREEDOM</span></div>
+
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="w-full py-3.5 rounded-lg bg-brand-gradient text-white font-semibold text-base shadow-brand-glow hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {loading ? "Processing..." : "Pay $9 & Activate"} {!loading && <Zap size={18} />}
+      </button>
+
+      <p className="text-center text-xs text-brand-muted">
+        Usage-based after your $20 wallet. If CATO doesn&apos;t deliver value, you won&apos;t be billed again.
+      </p>
+    </form>
+  );
+}
+
+// ─── Step 3: Confirmation ───────────────────────────────────────────────────
+function StepConfirm({ walletAmount }: { walletAmount: string }) {
+  return (
+    <div className="text-center space-y-6">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-green/10 mb-2">
+        <CheckCircle2 size={36} className="text-brand-green" />
+      </div>
+
+      <div>
+        <h3 className="text-2xl font-bold text-brand-fg mb-2">Welcome to the Founders Club</h3>
+        <p className="text-brand-muted">Your {walletAmount} AI wallet is loaded and ready.</p>
+      </div>
+
+      <div className="glass-card rounded-xl p-5 text-left space-y-3">
+        <h4 className="font-semibold text-brand-fg">What happens next:</h4>
+        <div className="space-y-2.5">
+          {[
+            "Your private Slack channel is being created",
+            "CATO AI will introduce itself within 24 hours",
+            "Complete your FREEDOM profile to accelerate setup",
+            "Daily coaching briefs start as soon as your profile is complete",
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-2.5 text-sm text-brand-muted">
+              <span className="text-brand-primary font-bold mt-0.5">{i + 1}.</span>
+              <span>{item}</span>
             </div>
+          ))}
+        </div>
+      </div>
+
+      <Link
+        href="/stage1"
+        className="inline-flex items-center gap-2 py-3.5 px-8 rounded-lg bg-brand-gradient text-white font-semibold shadow-brand-glow hover:opacity-90 transition-all"
+      >
+        Complete Your Profile <ChevronRight size={18} />
+      </Link>
+
+      <p className="text-xs text-brand-muted">
+        Takes 8-12 minutes. The faster you complete it, the faster CATO starts delivering value.
+      </p>
+    </div>
+  );
+}
+
+// ─── FAQ ────────────────────────────────────────────────────────────────────
+function FAQ() {
+  const [open, setOpen] = useState<number | null>(null);
+  const items = [
+    {
+      q: "What happens after I pay $9?",
+      a: "Your $20 AI wallet activates immediately. We create a private Slack channel and deploy CATO — your AI Growth Engineer. CATO starts working within 24 hours of profile completion.",
+    },
+    {
+      q: "What if I don't use it?",
+      a: "You won't be billed again. Your wallet only depletes when CATO actively works on your behalf. No activity, no charges. If it doesn't deliver massive value, it costs you nothing beyond the $9.",
+    },
+    {
+      q: "How does billing work after the $20?",
+      a: "Usage-based. CATO tracks what it does for your business. When your wallet reaches your set threshold, it auto-refills. You control the amount. Cancel anytime through Slack.",
+    },
+    {
+      q: "What does CATO actually do?",
+      a: "Daily coaching briefs, system audits, CRM automation, growth strategy execution, follow-up management, workflow optimization — 24/7. Think of it as a growth engineer that never sleeps.",
+    },
+    {
+      q: "Is this a subscription?",
+      a: "No fixed monthly fee. It's metered — you only pay for the work CATO does. Most clients find the ROI within the first week.",
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      {items.map((item, i) => (
+        <div key={i} className="glass-card rounded-xl overflow-hidden">
+          <button
+            onClick={() => setOpen(open === i ? null : i)}
+            className="w-full flex items-center justify-between p-4 text-left"
+          >
+            <span className="text-sm font-medium text-brand-fg">{item.q}</span>
+            <ChevronDown size={16} className={`text-brand-muted transition-transform ${open === i ? "rotate-180" : ""}`} />
+          </button>
+          {open === i && (
+            <div className="px-4 pb-4 text-sm text-brand-muted leading-relaxed">{item.a}</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Page ──────────────────────────────────────────────────────────────
+export default function FoundersClubPage() {
+  const [step, setStep] = useState<"info" | "payment" | "confirm">("info");
+  const [customerData, setCustomerData] = useState({ fullName: "", email: "", phone: "", companyName: "", customerId: "" });
+  const [clientSecret, setClientSecret] = useState("");
+  const [walletAmount, setWalletAmount] = useState("$20.00");
+  const [loading, setLoading] = useState(false);
+
+  async function handleInfoComplete(data: { fullName: string; email: string; phone: string; companyName: string }) {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/founders-club", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, step: "create-intent" }),
+      });
+      const result = await res.json();
+      if (result.clientSecret) {
+        setClientSecret(result.clientSecret);
+        setCustomerData({ ...data, customerId: result.customerId });
+        setStep("payment");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  }
+
+  async function handlePaymentSuccess(paymentIntentId: string) {
+    try {
+      const res = await fetch("/api/founders-club", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          step: "activate",
+          customerId: customerData.customerId,
+          paymentIntentId,
+          fullName: customerData.fullName,
+          email: customerData.email,
+          phone: customerData.phone,
+          companyName: customerData.companyName,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setWalletAmount(result.walletAmount || "$20.00");
+        setStep("confirm");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const elementsOptions: StripeElementsOptions = {
+    clientSecret,
+    appearance: {
+      theme: "night",
+      variables: {
+        colorPrimary: "#A83AC4",
+        colorBackground: "#101018",
+        colorText: "#F2F2F2",
+        colorDanger: "#EF4444",
+        borderRadius: "8px",
+        fontFamily: "Inter, system-ui, sans-serif",
+      },
+    },
+  };
+
+  return (
+    <div className="min-h-screen bg-brand-bg tech-grid">
+      {/* Header */}
+      <header className="border-b border-brand-border/50 bg-brand-bg/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/rs-icon.png" alt="RazoRSharp" className="h-8 w-8" />
+            <span className="text-brand-fg font-semibold text-sm hidden sm:block">RazoRSharp Networks</span>
           </div>
+          <span className="text-xs text-brand-muted">One System. One Flow. One Outcome. FREEDOM</span>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-10 pb-20">
-        {/* Welcome hero */}
-        <div className="text-center mb-12 animate-fade-in">
-          {allComplete ? (
-            <>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold mb-4">
-                <CheckCircle2 size={16} />
-                Onboarding Complete
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-brand-fg mb-4 leading-tight">
-                You&apos;re on the other side of Operator → Engineer.
-              </h1>
-              <p className="text-brand-muted-light max-w-xl mx-auto leading-relaxed">
-                Your TimeBACK system is being built. Daily coaching briefs start within 48 hours.
-                Welcome to the system.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-primary/10 border border-brand-primary/15 text-brand-primary text-sm font-semibold mb-4">
-                Client Onboarding
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-brand-fg mb-4 leading-tight">
-                Build a system that works<br className="hidden sm:block" /> while you don&apos;t.
-              </h1>
-              <p className="text-brand-muted-light max-w-xl mx-auto leading-relaxed">
-                This isn&apos;t a form. It&apos;s the first step from <strong className="text-brand-fg">Operator to Engineer.</strong><br />
-                Complete it once. We handle the rest.
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Overall progress */}
-        {progress > 0 && !allComplete && (
-          <div className="mb-8 p-4 rounded-xl border border-brand-border bg-brand-card animate-slide-up">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-brand-fg/80">Overall Progress</span>
-              <span className="text-sm font-bold text-brand-primary">{progress}%</span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-brand-slate overflow-hidden">
-              <div
-                className="h-full rounded-full bg-brand-primary transition-all duration-700"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs text-brand-muted mt-2">
-              {progress < 50
-                ? "You're getting started. The hardest part is beginning."
-                : progress < 100
-                ? "You're past the halfway point. Finish this and your system activates."
-                : ""}
-            </p>
+      <main className="max-w-5xl mx-auto px-4 py-12 md:py-20">
+        {/* Hero */}
+        <section className="text-center mb-16 md:mb-20">
+          <div className="inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/20 rounded-full px-4 py-1.5 mb-6">
+            <Sparkles size={14} className="text-brand-primary" />
+            <span className="text-xs font-medium text-brand-primary">TimeBACK Founders Club — Limited Pilot</span>
           </div>
-        )}
 
-        {/* Stage cards */}
-        <div className="space-y-4 animate-slide-up">
-          {STAGES.map((stage) => {
-            const stageStatus = status?.[stage.id] ?? "not-started";
-            const colors = getColorClasses(stage.color, stageStatus);
-            const Icon = stage.icon;
-            const isComplete = stageStatus === "complete";
-            const linkLabel = isComplete ? "Review" : stageStatus === "in-progress" ? "Continue" : "Start";
+          <div className="mb-6">
+            <img src="/cato-mascot.png" alt="CATO — Your AI Growth Engineer" className="h-36 md:h-44 mx-auto drop-shadow-[0_0_30px_rgba(168,58,196,0.35)]" />
+          </div>
 
-            return (
-              <div
-                key={stage.id}
-                className={cn(
-                  "rounded-xl border transition-all duration-200 p-5",
-                  colors.border,
-                  colors.bg
-                )}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div className={cn("mt-0.5 flex-shrink-0", colors.icon)}>
-                    {isComplete
-                      ? <CheckCircle2 size={24} />
-                      : <Icon size={24} />
-                    }
-                  </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-brand-fg leading-tight mb-5">
+            Your Business Should<br />
+            <span className="gradient-text">Run Without You</span>
+          </h1>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-brand-muted font-medium">Stage {stage.number}</span>
-                          <StatusBadge status={stageStatus} />
-                        </div>
-                        <h3 className="text-lg font-bold text-brand-fg mt-0.5">{stage.title}</h3>
-                        <p className="text-sm text-brand-muted-light mt-1">{stage.subtitle}</p>
-                        <p className="text-xs text-brand-muted mt-1.5">{stage.time} · {stage.priority}</p>
-                      </div>
+          <p className="text-lg md:text-xl text-brand-muted max-w-2xl mx-auto mb-8 leading-relaxed">
+            Meet <strong className="text-brand-fg">CATO</strong> — your AI Growth Engineer.
+            For <strong className="text-brand-fg">$9</strong>, get a <strong className="text-brand-fg">$20 AI wallet</strong> and
+            experience what 24/7 growth engineering feels like.
+            If it doesn&apos;t deliver massive value, you won&apos;t be billed again.
+          </p>
 
-                      {/* CTA */}
-                      <Link
-                        href={stage.href}
-                        className={cn(
-                          "flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 shadow-sm",
-                          colors.btn
-                        )}
-                      >
-                        {linkLabel}
-                        <ChevronRight size={16} />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+          <a href="#join" className="inline-flex items-center gap-2 py-3.5 px-8 rounded-lg bg-brand-gradient text-white font-semibold text-lg shadow-brand-glow hover:opacity-90 transition-all">
+            Join for $9 <ArrowRight size={20} />
+          </a>
+        </section>
+
+        {/* The Problem */}
+        <section className="mb-16 md:mb-20">
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { icon: Clock, title: "You're the bottleneck", desc: "Every decision, follow-up, and reminder runs through you. Your calendar owns you." },
+              { icon: TrendingUp, title: "Effort ≠ Revenue", desc: "You're working 60+ hours but growth is flat. Busy isn't productive." },
+              { icon: Users, title: "Your team asks you", desc: "Instead of systems answering, people wait for you. That doesn't scale." },
+            ].map((item, i) => (
+              <div key={i} className="glass-card rounded-xl p-5 space-y-3">
+                <item.icon size={24} className="text-brand-primary" />
+                <h3 className="font-semibold text-brand-fg">{item.title}</h3>
+                <p className="text-sm text-brand-muted leading-relaxed">{item.desc}</p>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        </section>
 
-        {/* Completion message */}
-        {allComplete && (
-          <div className="mt-10 p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5 animate-slide-up">
-            <h3 className="text-lg font-bold text-emerald-400 mb-3">Here&apos;s what happens next:</h3>
-            <div className="space-y-2">
-              {[
-                "✅ Your AI Growth Engine profile is being created",
-                "🎯 Your FREEDOM Plan is being drafted",
-                "📊 Daily coaching briefs start within 48 hours",
-                "🔧 Your platforms are being connected",
-              ].map((item, i) => (
-                <p key={i} className="text-sm text-brand-fg/80">{item}</p>
+        {/* What You Get */}
+        <section className="mb-16 md:mb-20">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-brand-fg mb-3">$9 Gets You Into the Club</h2>
+            <p className="text-brand-muted max-w-lg mx-auto">Everything you need to experience the TimeBACK system — with zero risk.</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: Zap, title: "$20 AI Wallet", desc: "Loaded instantly. CATO runs on this — real AI work, real results for your business." },
+              { icon: MessageSquare, title: "Private Slack Channel", desc: "Direct line to your AI Growth Engineer. Ask anything, anytime." },
+              { icon: Shield, title: "FREEDOM Diagnostic", desc: "We audit your time, systems, and revenue leaks. See exactly where you're stuck." },
+              { icon: BarChart3, title: "Daily Coaching Briefs", desc: "One key insight + one action item, every day. Delivered to your Slack." },
+              { icon: TrendingUp, title: "Growth Execution 24/7", desc: "CRM automation, follow-ups, workflow optimization — CATO never sleeps." },
+              { icon: Sparkles, title: "Usage-Based. No Lock-In.", desc: "If CATO doesn't provide massive value, you won't be billed again. Period." },
+            ].map((item, i) => (
+              <div key={i} className="glass-card rounded-xl p-5 space-y-3 hover:border-brand-primary/30 transition-all">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-brand-primary/10">
+                  <item.icon size={20} className="text-brand-primary" />
+                </div>
+                <h3 className="font-semibold text-brand-fg text-sm">{item.title}</h3>
+                <p className="text-xs text-brand-muted leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* How It Works */}
+        <section className="mb-16 md:mb-20">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-brand-fg mb-3">Three Steps to Freedom</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { step: "1", title: "Pay $9", desc: "Your $20 wallet loads instantly. Payment info secured for metered billing." },
+              { step: "2", title: "Complete Your Profile", desc: "5-minute intake. We build your custom system and FREEDOM plan." },
+              { step: "3", title: "CATO Goes to Work", desc: "Daily briefs, automated systems, growth execution. You get your time back." },
+            ].map((item, i) => (
+              <div key={i} className="text-center space-y-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-gradient text-white font-bold text-lg shadow-brand-glow">
+                  {item.step}
+                </div>
+                <h3 className="font-semibold text-brand-fg">{item.title}</h3>
+                <p className="text-sm text-brand-muted leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* The TimeBACK Promise */}
+        <section className="mb-16 md:mb-20">
+          <div className="glass-card rounded-2xl p-8 md:p-10 text-center">
+            <img src="/cato-mascot.png" alt="CATO" className="h-24 mx-auto mb-4 drop-shadow-[0_0_20px_rgba(168,58,196,0.3)]" />
+            <h2 className="text-2xl md:text-3xl font-bold text-brand-fg mb-4">
+              From Operator to Engineer
+            </h2>
+            <p className="text-brand-muted max-w-2xl mx-auto leading-relaxed mb-6">
+              CATO is built to protect your time, create margin in your schedule, and build lifestyle business assets
+              — all while driving growth and revenue for your organization, 24/7. The TimeBACK system is how you
+              shift from doing everything to engineering the business that runs without you.
+            </p>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              {["Audit", "Optimize", "Measure", "Refill"].map((phase) => (
+                <div key={phase} className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-brand-primary" />
+                  <span className="text-brand-fg font-medium">{phase}</span>
+                </div>
               ))}
             </div>
           </div>
-        )}
+        </section>
 
-        {/* Bottom brand message */}
-        {!allComplete && (
-          <div className="mt-10 text-center">
-            <p className="text-xs text-brand-muted leading-relaxed">
-              Each stage is independent — complete them in any order.<br />
-              Your progress saves automatically. Pick up where you left off anytime.
-            </p>
+        {/* Join Form */}
+        <section id="join" className="mb-16 md:mb-20 scroll-mt-24">
+          <div className="max-w-md mx-auto">
+            <div className="glass-card rounded-2xl p-6 md:p-8">
+              {step === "info" && <StepInfo onNext={handleInfoComplete} />}
+              {step === "payment" && clientSecret && (
+                <Elements stripe={stripePromise} options={elementsOptions}>
+                  <CheckoutForm onSuccess={handlePaymentSuccess} customerData={customerData} />
+                </Elements>
+              )}
+              {step === "confirm" && <StepConfirm walletAmount={walletAmount} />}
+              {loading && step === "info" && (
+                <div className="flex items-center justify-center py-4">
+                  <div className="w-6 h-6 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </section>
+
+        {/* FAQ */}
+        <section className="mb-16 md:mb-20 max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-brand-fg text-center mb-8">Questions?</h2>
+          <FAQ />
+        </section>
+
+        {/* Final CTA */}
+        <section className="text-center pb-12">
+          <p className="text-brand-muted mb-4">Ready to get your time back?</p>
+          <a href="#join" className="inline-flex items-center gap-2 py-3 px-6 rounded-lg bg-brand-gradient text-white font-semibold shadow-brand-glow hover:opacity-90 transition-all">
+            Join the Founders Club — $9 <ArrowRight size={18} />
+          </a>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-brand-border/50 py-8">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-muted">
+          <span>© 2026 RazoRSharp Networks. All rights reserved.</span>
+          <span>One System. One Flow. One Outcome. FREEDOM</span>
+        </div>
+      </footer>
     </div>
   );
 }

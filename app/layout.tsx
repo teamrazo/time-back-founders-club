@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Client Onboarding | RazoRSharp Networks",
-  description: "One System. One Flow. One Outcome. FREEDOM — RazoRSharp Networks Client Onboarding",
+  title: "TimeBACK Founders Club | RazoRSharp Networks",
+  description: "Your AI Growth Engineer for $9. Get a $20 wallet and experience 24/7 growth engineering. One System. One Flow. One Outcome. FREEDOM.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },

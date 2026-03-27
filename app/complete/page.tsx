@@ -90,7 +90,7 @@ export default function CompletePage() {
         </p>
 
         <Link
-          href="/"
+          href="/intake"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-brand-border hover:bg-brand-card text-brand-fg/80 font-medium text-sm transition-all"
         >
           Back to Dashboard
