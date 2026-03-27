@@ -329,6 +329,10 @@ export default function FoundersClubPage() {
             <span className="text-xs font-medium text-brand-primary">TimeBACK Founders Club — Limited Pilot</span>
           </div>
 
+          <div className="mb-6">
+            <img src="/cato-mascot.png" alt="CATO — Your AI Growth Engineer" className="h-36 md:h-44 mx-auto drop-shadow-[0_0_30px_rgba(168,58,196,0.35)]" />
+          </div>
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-brand-fg leading-tight mb-5">
             Your Business Should<br />
             <span className="gradient-text">Run Without You</span>
@@ -416,6 +420,7 @@ export default function FoundersClubPage() {
         {/* The TimeBACK Promise */}
         <section className="mb-16 md:mb-20">
           <div className="glass-card rounded-2xl p-8 md:p-10 text-center">
+            <img src="/cato-mascot.png" alt="CATO" className="h-24 mx-auto mb-4 drop-shadow-[0_0_20px_rgba(168,58,196,0.3)]" />
             <h2 className="text-2xl md:text-3xl font-bold text-brand-fg mb-4">
               From Operator to Engineer
             </h2>
