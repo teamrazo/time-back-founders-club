@@ -86,20 +86,38 @@ export async function POST(req: NextRequest) {
 
       const subscriptionItemId = subscription.items.data[0]?.id || "";
 
-      // Sync to GHL
+      // Sync to GHL — full order details on contact record
       const GHL_ENABLED = Boolean(process.env.GHL_PRIVATE_TOKEN && process.env.GHL_LOCATION_ID);
       if (GHL_ENABLED && email && fullName && phone) {
         try {
+          const orderDate = new Date().toISOString();
+          const orderNote = [
+            `🛒 ORDER: TimeBACK Founders Club Pilot`,
+            `Date: ${new Date().toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}`,
+            `Amount: $9.00`,
+            `Wallet: $20.00 loaded`,
+            `Stripe Customer: ${customerId}`,
+            `Stripe Subscription: ${subscription.id}`,
+            `Stripe Payment: ${paymentIntentId || "N/A"}`,
+            `Company: ${companyName || "N/A"}`,
+            `Product: AI Growth Engine — Metered Usage`,
+            `Billing Model: Wallet threshold ($20 default)`,
+          ].join("\n");
+
           await upsertContactAndTag({
             fullName,
             email,
             phone,
             companyName,
+            source: "TimeBACK Founders Club",
             tagsToAdd: [
               "Status - Onboarding Pipeline - Pilot Activated",
               "Activity - Founders Club - Pilot Payment Complete",
               "Activity - Onboarding - Wallet Loaded",
+              "Profile - Source - Founders Club Landing Page",
+              "Profile - Product - AI Growth Engine",
             ],
+            note: orderNote,
           });
         } catch (e) {
           console.warn("GHL sync failed:", e);

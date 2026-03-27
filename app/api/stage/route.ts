@@ -105,6 +105,12 @@ export async function POST(req: NextRequest) {
 
         const tagsToAdd = stageTagMap[String(stage)] || [`Onboarding: ${String(stage)} Complete`];
 
+        const stageNoteMap: Record<string, string> = {
+          stage1: "📋 Completed TimeBACK Build — system profile, goals, FREEDOM scorecard & brand voice submitted.",
+          stage2: "📊 Completed Marketing Assessment — current state, target market, goals & readiness evaluated.",
+          stage3: "🔑 Completed Access Grant — platform credentials & admin access provided for campaign execution.",
+        };
+
         // Only attempt if we have the required fields
         if (submission.contact.email && submission.contact.phone && submission.contact.name) {
           await upsertContactAndTag({
@@ -113,6 +119,7 @@ export async function POST(req: NextRequest) {
             phone: submission.contact.phone,
             companyName: submission.contact.company,
             tagsToAdd,
+            note: stageNoteMap[String(stage)] || `Completed onboarding ${stage}`,
           });
         }
       } catch (ghlErr) {

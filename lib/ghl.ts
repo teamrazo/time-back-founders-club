@@ -106,28 +106,49 @@ export async function updateContact(contactId: string, patch: Partial<GhlContact
   return json?.contact as GhlContact;
 }
 
+export async function addNoteToContact(contactId: string, note: string) {
+  const { ok, status, text } = await ghlFetch(`/contacts/${contactId}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ body: note }),
+  });
+  if (!ok) console.warn(`Note add failed (${status}): ${text}`);
+  return ok;
+}
+
 export async function upsertContactAndTag(input: {
   fullName: string;
   email: string;
   phone: string;
   companyName?: string;
   tagsToAdd: string[];
+  customFields?: { key: string; field_value: string }[];
+  note?: string;
+  source?: string;
 }) {
   const existing = await findContactByEmail(input.email);
 
   if (!existing) {
     const created = await createContact(input);
-    await updateContact(created.id, { tags: Array.from(new Set([...(created.tags || []), ...input.tagsToAdd])) });
+    const updatePayload: Record<string, unknown> = {
+      tags: Array.from(new Set([...(created.tags || []), ...input.tagsToAdd])),
+    };
+    if (input.source) updatePayload.source = input.source;
+    if (input.customFields) updatePayload.customFields = input.customFields;
+    await updateContact(created.id, updatePayload as any);
+    if (input.note) await addNoteToContact(created.id, input.note);
     return { contactId: created.id, created: true };
   }
 
   const mergedTags = Array.from(new Set([...(existing.tags || []), ...input.tagsToAdd]));
-  await updateContact(existing.id, {
-    // ensure the basics are filled
+  const updatePayload: Record<string, unknown> = {
     email: input.email,
     phone: input.phone,
     tags: mergedTags,
-  });
+  };
+  if (input.source) updatePayload.source = input.source;
+  if (input.customFields) updatePayload.customFields = input.customFields;
+  await updateContact(existing.id, updatePayload as any);
+  if (input.note) await addNoteToContact(existing.id, input.note);
 
   return { contactId: existing.id, created: false };
 }
