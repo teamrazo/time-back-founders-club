@@ -1,14 +1,23 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { upsertContactAndTag } from "@/lib/ghl";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-12-18.acacia" as Stripe.LatestApiVersion });
+let _stripe: Stripe | null = null;
+function getStripe() {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-12-18.acacia" as Stripe.LatestApiVersion });
+  }
+  return _stripe;
+}
 
 const METERED_PRICE_ID = process.env.STRIPE_METERED_PRICE_ID || "price_1TFaZw2nD6x4dHG0450vf8JS";
 const WALLET_AMOUNT_CENTS = 2000; // $20 wallet
 const PILOT_AMOUNT_CENTS = 900; // $9 entry
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe();
   try {
     const body = await req.json();
     const { fullName, email, phone, companyName, step } = body;

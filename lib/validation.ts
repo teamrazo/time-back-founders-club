@@ -66,8 +66,8 @@ export function validateStage1(data: Record<string, unknown>): ValidationError[]
   }
 
   // Operator score required
-  if (!data.operatorScore) {
-    errors.push({ field: 'operatorScore', message: 'Select where you are on the Operator to Engineer scale' });
+  if (!data.operatorAssessment) {
+    errors.push({ field: 'operatorAssessment', message: 'Select where you are on the Operator to Engineer scale' });
   }
 
   return errors;
@@ -77,13 +77,13 @@ export function validateStage1(data: Record<string, unknown>): ValidationError[]
 export function validateStage2(data: Record<string, unknown>): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  // Lead sources
-  const sources = data.leadSources as string[] | undefined;
+  // How customers find you (Stage 2A)
+  const sources = data.howCustomersFind as string[] | undefined;
   if (!sources || sources.length === 0) {
-    errors.push({ field: 'leadSources', message: 'Select at least one way customers find you' });
+    errors.push({ field: 'howCustomersFind', message: 'Select at least one way customers find you' });
   }
 
-  // Ideal customer
+  // Ideal customer (Stage 2B)
   if (!data.idealCustomer || !(data.idealCustomer as string).trim()) {
     errors.push({ field: 'idealCustomer', message: 'Describe your ideal customer' });
   }

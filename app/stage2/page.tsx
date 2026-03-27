@@ -235,10 +235,25 @@ export default function Stage2Page() {
   };
 
   const handleSubmit = async () => {
-    setSubmitting(true);
+    setFieldErrors({});
     setError(null);
+
+    // Validate entry + stage2 data before submitting
+    const entry = storage.getEntry();
+    const entryErrors = validateEntry(entry as unknown as Record<string, unknown>);
+    const stageErrors = validateStage2(stageData as unknown as Record<string, unknown>);
+    const allErrors: ValidationError[] = [...entryErrors, ...stageErrors];
+
+    if (allErrors.length > 0) {
+      const errorMap: Record<string, string> = {};
+      allErrors.forEach(e => { errorMap[e.field] = e.message; });
+      setFieldErrors(errorMap);
+      setError(`Please complete the required fields (${allErrors.length} missing)`);
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      const entry = storage.getEntry();
       const payload = {
         stage: 'stage2',
         stageLabel: 'Marketing Assessment',
