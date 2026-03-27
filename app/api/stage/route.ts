@@ -3,6 +3,7 @@ import { writeFile, mkdir, appendFile } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
 import { validateSubmission } from "@/lib/validation";
+import { upsertContactAndTag } from "@/lib/ghl";
 
 const DATA_DIR =
   process.env.DATA_DIR ||
@@ -11,6 +12,7 @@ const DATA_DIR =
     : path.join(process.cwd(), "data"));
 
 const WEBHOOK_URL = process.env.WEBHOOK_URL || "";
+const GHL_ENABLED = Boolean(process.env.GHL_PRIVATE_TOKEN && process.env.GHL_LOCATION_ID);
 
 // Simple in-memory rate limiter (per IP, 10 submissions per 15 min)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -81,7 +83,33 @@ export async function POST(req: NextRequest) {
     const logPath = path.join(DATA_DIR, "onboarding.jsonl");
     await appendFile(logPath, JSON.stringify(submission) + "\n", "utf-8");
 
-    // Fire GHL webhook if configured
+    // Sync to GHL via API (preferred) if enabled
+    if (GHL_ENABLED) {
+      try {
+        const stageTagMap: Record<string, string[]> = {
+          stage1: ["TimeBACK Build Complete"],
+          stage2: ["Assessment Complete"],
+          stage3: ["Access Granted", "Onboarding Complete"],
+        };
+
+        const tagsToAdd = stageTagMap[String(stage)] || [`Onboarding: ${String(stage)} Complete`];
+
+        // Only attempt if we have the required fields
+        if (submission.contact.email && submission.contact.phone && submission.contact.name) {
+          await upsertContactAndTag({
+            fullName: submission.contact.name,
+            email: submission.contact.email,
+            phone: submission.contact.phone,
+            companyName: submission.contact.company,
+            tagsToAdd,
+          });
+        }
+      } catch (ghlErr) {
+        console.warn("GHL sync failed:", ghlErr);
+      }
+    }
+
+    // Fire webhook if configured (secondary integration path)
     if (WEBHOOK_URL) {
       try {
         await fetch(WEBHOOK_URL, {
@@ -103,7 +131,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, id, stage }, { status: 200 });
+    return NextResponse.json({ success: true, id, stage, ghlEnabled: GHL_ENABLED }, { status: 200 });
   } catch (err) {
     console.error("Stage submission error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
