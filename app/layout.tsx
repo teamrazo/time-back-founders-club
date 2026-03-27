@@ -4,6 +4,13 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Client Onboarding | RazoRSharp Networks",
   description: "One System. One Flow. One Outcome. FREEDOM — RazoRSharp Networks Client Onboarding",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Client Onboarding | RazoRSharp Networks",
     description: "TimeBACK System — 3-Stage Client Onboarding",

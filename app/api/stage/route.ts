@@ -86,10 +86,21 @@ export async function POST(req: NextRequest) {
     // Sync to GHL via API (preferred) if enabled
     if (GHL_ENABLED) {
       try {
+        // Tag Naming Convention: Category - Context - Detail
+        // Categories: Status (mutually exclusive), Activity (permanent), Trigger (temporary)
         const stageTagMap: Record<string, string[]> = {
-          stage1: ["TimeBACK Build Complete"],
-          stage2: ["Assessment Complete"],
-          stage3: ["Access Granted", "Onboarding Complete"],
+          stage1: [
+            "Status - Onboarding Pipeline - TimeBACK Build Complete",
+            "Activity - Onboarding - TimeBACK Build Submitted",
+          ],
+          stage2: [
+            "Status - Onboarding Pipeline - Assessment Complete",
+            "Activity - Onboarding - Marketing Assessment Submitted",
+          ],
+          stage3: [
+            "Status - Onboarding Pipeline - Access Granted",
+            "Activity - Onboarding - Onboarding Complete",
+          ],
         };
 
         const tagsToAdd = stageTagMap[String(stage)] || [`Onboarding: ${String(stage)} Complete`];
