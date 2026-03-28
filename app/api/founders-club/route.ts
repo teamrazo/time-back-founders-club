@@ -133,6 +133,25 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Slack notification for payment
+      const SLACK_WEBHOOK = process.env.SLACK_NOTIFICATION_WEBHOOK;
+      const paymentTime = new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" });
+      console.log(`[notify] Founders Club payment: ${fullName} | ${email}`);
+      if (SLACK_WEBHOOK) {
+        try {
+          await fetch(SLACK_WEBHOOK, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: `🔥 *New CATO AI Activation Payment*\n• *Name:* ${fullName}\n• *Email:* ${email}\n• *Amount:* $9.00 (pilot) + $20.00 wallet\n• *Company:* ${companyName || "N/A"}\n• *Time:* ${paymentTime}`,
+            }),
+            signal: AbortSignal.timeout(5000),
+          });
+        } catch (notifyErr) {
+          console.warn("Slack notification failed:", notifyErr);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         subscriptionId: subscription.id,

@@ -236,6 +236,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Slack notification after GHL sync
+    const SLACK_WEBHOOK = process.env.SLACK_NOTIFICATION_WEBHOOK;
+    const stageLabels: Record<string, string> = {
+      stage1: "Stage 1 — TimeBACK Build",
+      stage2: "Stage 2 — Marketing Assessment",
+      stage3: "Stage 3 — Access Grant",
+    };
+    console.log(`[notify] Stage complete: ${stage} | ${submission.contact.name} | ${submission.contact.email}`);
+    if (SLACK_WEBHOOK) {
+      try {
+        await fetch(SLACK_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `🎯 *Client Intake Completed*\n• *Stage:* ${stageLabels[String(stage)] || stage}\n• *Name:* ${submission.contact.name}\n• *Email:* ${submission.contact.email}\n• *Company:* ${submission.contact.company || "N/A"}\n• *Time:* ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`,
+          }),
+          signal: AbortSignal.timeout(5000),
+        });
+      } catch (notifyErr) {
+        console.warn("Slack notification failed:", notifyErr);
+      }
+    }
+
     // Fire webhook if configured (secondary integration path)
     if (WEBHOOK_URL) {
       try {
