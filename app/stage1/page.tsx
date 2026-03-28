@@ -384,13 +384,43 @@ export default function Stage1Page() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [alreadyComplete, setAlreadyComplete] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage, then check server for completion status
   useEffect(() => {
-    setEntryData(storage.getEntry());
+    const entry = storage.getEntry();
+    setEntryData(entry);
     setStageData(storage.getStage1());
     const status = storage.getStatus();
     if (status.entryComplete) setStep(1);
+
+    // If already marked complete locally, set banner
+    if (status.stage1 === "complete") {
+      setAlreadyComplete(true);
+      return;
+    }
+
+    // Check server if we have an email
+    const email = entry?.bestEmail?.trim();
+    if (email) {
+      fetch("/api/check-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(serverStatus => {
+          if (serverStatus?.stage1 === "complete") {
+            setAlreadyComplete(true);
+            const current = storage.getStatus();
+            if (current.stage1 !== "complete") {
+              storage.setStatus({ ...current, stage1: "complete", lastUpdated: new Date().toISOString() });
+            }
+          }
+        })
+        .catch(() => {/* silent */});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-save
@@ -542,6 +572,15 @@ export default function Stage1Page() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 pb-32 animate-slide-up">
+        {alreadyComplete && (
+          <div className="mb-6 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex items-start gap-3">
+            <CheckCircle2 size={20} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-emerald-400">You&apos;ve already completed this stage.</p>
+              <p className="text-xs text-brand-muted mt-0.5">You can review your answers below or re-submit to update them.</p>
+            </div>
+          </div>
+        )}
         {renderStep()}
       </main>
 

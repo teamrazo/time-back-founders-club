@@ -252,16 +252,45 @@ export default function Stage3Page() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
+  const [alreadyComplete, setAlreadyComplete] = useState(false);
 
   useEffect(() => {
     setStageData(storage.getStage3());
     const entry = storage.getEntry();
     setBudgetTier(getBudgetTier(entry.monthlyBudget));
-    // Mark in progress
     const status = storage.getStatus();
-    if (status.stage3 === 'not-started') {
-      storage.setStatus({ ...status, stage3: 'in-progress', lastUpdated: new Date().toISOString() });
+
+    // Already complete locally
+    if (status.stage3 === "complete") {
+      setAlreadyComplete(true);
+    } else {
+      // Mark in progress
+      if (status.stage3 === "not-started") {
+        storage.setStatus({ ...status, stage3: "in-progress", lastUpdated: new Date().toISOString() });
+      }
+
+      // Check server for completion
+      const email = entry?.bestEmail?.trim();
+      if (email) {
+        fetch("/api/check-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(serverStatus => {
+            if (serverStatus?.stage3 === "complete") {
+              setAlreadyComplete(true);
+              const current = storage.getStatus();
+              if (current.stage3 !== "complete") {
+                storage.setStatus({ ...current, stage3: "complete", lastUpdated: new Date().toISOString() });
+              }
+            }
+          })
+          .catch(() => {/* silent */});
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -366,6 +395,15 @@ export default function Stage3Page() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 pb-36 space-y-8 animate-slide-up">
+        {alreadyComplete && (
+          <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex items-start gap-3">
+            <AlertCircle size={20} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-emerald-400">You&apos;ve already completed this stage.</p>
+              <p className="text-xs text-brand-muted mt-0.5">You can review your answers below or re-submit to update them.</p>
+            </div>
+          </div>
+        )}
         <SectionHeader
           tag="Stage 3"
           title="Platform Access"

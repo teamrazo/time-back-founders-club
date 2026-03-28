@@ -119,6 +119,7 @@ function HomePage() {
   const [status, setStatus] = useState<OnboardingStatus | null>(null);
   const [entryComplete, setEntryComplete] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [checkingServer, setCheckingServer] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -137,6 +138,45 @@ function HomePage() {
         break;
       }
     }
+
+    // Server-side status restoration: if any stage is not-started, check GHL
+    const hasIncomplete =
+      s.stage1 !== "complete" || s.stage2 !== "complete" || s.stage3 !== "complete";
+    if (hasIncomplete) {
+      const entry = storage.getEntry();
+      const email = entry?.bestEmail?.trim();
+      if (email) {
+        setCheckingServer(true);
+        fetch("/api/check-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(serverStatus => {
+            if (!serverStatus) return;
+            setStatus(prev => {
+              if (!prev) return prev;
+              const updated = { ...prev };
+              let changed = false;
+              for (const key of ["stage1", "stage2", "stage3"] as const) {
+                if (serverStatus[key] === "complete" && prev[key] !== "complete") {
+                  updated[key] = "complete";
+                  changed = true;
+                }
+              }
+              if (changed) {
+                updated.lastUpdated = new Date().toISOString();
+                storage.setStatus(updated);
+              }
+              return updated;
+            });
+          })
+          .catch(() => {/* silent */})
+          .finally(() => setCheckingServer(false));
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const allComplete = status?.stage1 === "complete" && status?.stage2 === "complete" && status?.stage3 === "complete";
@@ -308,10 +348,16 @@ function HomePage() {
         {/* Bottom brand message */}
         {!allComplete && (
           <div className="mt-10 text-center">
-            <p className="text-xs text-brand-muted leading-relaxed">
-              Each stage is independent — complete them in any order.<br />
-              Your progress saves automatically. Pick up where you left off anytime.
-            </p>
+            {checkingServer ? (
+              <p className="text-xs text-brand-muted/60 leading-relaxed animate-pulse">
+                Checking your progress…
+              </p>
+            ) : (
+              <p className="text-xs text-brand-muted leading-relaxed">
+                Each stage is independent — complete them in any order.<br />
+                Your progress saves automatically. Pick up where you left off anytime.
+              </p>
+            )}
           </div>
         )}
       </main>
