@@ -66,9 +66,10 @@ function StepInfo({ onNext }: { onNext: (data: {
 }
 
 // ─── Step 2: Payment ────────────────────────────────────────────────────────
-function CheckoutForm({ onSuccess, customerData }: {
+function CheckoutForm({ onSuccess, customerData, isPromo }: {
   onSuccess: (paymentIntentId: string) => void;
   customerData: { fullName: string; email: string; phone: string; companyName: string; customerId: string };
+  isPromo?: boolean;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -90,7 +91,7 @@ function CheckoutForm({ onSuccess, customerData }: {
     if (result.error) {
       setError(result.error.message || "Payment failed. Please try again.");
       setLoading(false);
-    } else if (result.paymentIntent?.status === "succeeded") {
+    } else if (result.paymentIntent?.status === "succeeded" || result.paymentIntent?.status === "requires_capture") {
       onSuccess(result.paymentIntent.id);
     }
   }
@@ -99,14 +100,22 @@ function CheckoutForm({ onSuccess, customerData }: {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <h3 className="text-xl font-bold text-brand-fg mb-1">Activate Your Pilot</h3>
-        <p className="text-brand-muted text-sm">$9 today. Your $20 AI wallet loads immediately.</p>
+        <p className="text-brand-muted text-sm">
+          {isPromo ? "$1 authorization hold (released after verification). Your $20 AI wallet loads immediately." : "$9 today. Your $20 AI wallet loads immediately."}
+        </p>
       </div>
 
       <div className="glass-card rounded-xl p-4 space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-brand-fg font-medium">TimeBACK Founders Club</span>
-          <span className="text-brand-primary font-bold text-lg">$9</span>
+          <span className="text-brand-primary font-bold text-lg">{isPromo ? "$1" : "$9"}</span>
         </div>
+        {isPromo && (
+          <div className="flex items-center gap-2 text-xs text-brand-green">
+            <Sparkles size={12} />
+            <span>Promo applied — $1 auth hold released after verification</span>
+          </div>
+        )}
         <div className="border-t border-brand-border pt-3 space-y-1.5">
           <div className="flex items-center gap-2 text-sm text-brand-muted">
             <CheckCircle2 size={14} className="text-brand-green shrink-0" />
@@ -140,7 +149,7 @@ function CheckoutForm({ onSuccess, customerData }: {
         disabled={!stripe || loading}
         className="w-full py-3.5 rounded-lg bg-brand-gradient text-white font-semibold text-base shadow-brand-glow hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {loading ? "Processing..." : "Pay $9 & Activate"} {!loading && <Zap size={18} />}
+        {loading ? "Processing..." : isPromo ? "Authorize $1 & Activate" : "Pay $9 & Activate"} {!loading && <Zap size={18} />}
       </button>
 
       <p className="text-center text-xs text-brand-muted">
@@ -247,6 +256,11 @@ export default function FoundersClubPage() {
   const [clientSecret, setClientSecret] = useState("");
   const [walletAmount, setWalletAmount] = useState("$20.00");
   const [loading, setLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [showPromo, setShowPromo] = useState(false);
+
+  const VALID_PROMO = "GETYOURTIMEBACKIN2026!";
+  const isValidPromo = promoCode.trim().toUpperCase() === VALID_PROMO.toUpperCase();
 
   async function handleInfoComplete(data: { fullName: string; email: string; phone: string; companyName: string }) {
     setLoading(true);
@@ -254,7 +268,7 @@ export default function FoundersClubPage() {
       const res = await fetch("/api/founders-club", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, step: "create-intent" }),
+        body: JSON.stringify({ ...data, step: "create-intent", ...(isValidPromo ? { promoCode: promoCode.trim() } : {}) }),
       });
       const result = await res.json();
       if (result.clientSecret) {
@@ -277,6 +291,7 @@ export default function FoundersClubPage() {
           step: "activate",
           customerId: customerData.customerId,
           paymentIntentId,
+          ...(isValidPromo ? { promoCode: promoCode.trim() } : {}),
           fullName: customerData.fullName,
           email: customerData.email,
           phone: customerData.phone,
@@ -444,10 +459,39 @@ export default function FoundersClubPage() {
         <section id="join" className="mb-16 md:mb-20 scroll-mt-24">
           <div className="max-w-md mx-auto">
             <div className="glass-card rounded-2xl p-6 md:p-8">
-              {step === "info" && <StepInfo onNext={handleInfoComplete} />}
+              {step === "info" && (
+                <>
+                  <StepInfo onNext={handleInfoComplete} />
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowPromo(!showPromo)}
+                      className="text-sm text-brand-primary hover:underline"
+                    >
+                      {showPromo ? "Hide promo code" : "Have a promo code?"}
+                    </button>
+                    {showPromo && (
+                      <div className="mt-3">
+                        <input
+                          type="text"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value)}
+                          placeholder="Enter promo code"
+                          className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-3 text-brand-fg placeholder:text-brand-muted/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 outline-none transition-all text-sm"
+                        />
+                        {promoCode.trim() && (
+                          <p className={`text-xs mt-1.5 ${isValidPromo ? "text-brand-green" : "text-brand-muted"}`}>
+                            {isValidPromo ? "✓ Promo code applied! $1 authorization instead of $9" : "Code not recognized — standard pricing applies"}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
               {step === "payment" && clientSecret && (
                 <Elements stripe={stripePromise} options={elementsOptions}>
-                  <CheckoutForm onSuccess={handlePaymentSuccess} customerData={customerData} />
+                  <CheckoutForm onSuccess={handlePaymentSuccess} customerData={customerData} isPromo={isValidPromo} />
                 </Elements>
               )}
               {step === "confirm" && <StepConfirm walletAmount={walletAmount} />}

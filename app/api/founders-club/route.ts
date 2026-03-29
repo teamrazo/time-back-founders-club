@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
   const stripe = getStripe();
   try {
     const body = await req.json();
-    const { fullName, email, phone, companyName, step } = body;
+    const { fullName, email, phone, companyName, step, promoCode } = body;
+    const VALID_PROMO = "GETYOURTIMEBACKIN2026!";
+    const isPromo = typeof promoCode === "string" && promoCode.trim().toUpperCase() === VALID_PROMO.toUpperCase();
 
     // Step 1: Create Payment Intent for $9
     if (step === "create-intent") {
@@ -48,15 +50,26 @@ export async function POST(req: NextRequest) {
       }
 
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: PILOT_AMOUNT_CENTS,
+        amount: isPromo ? 100 : PILOT_AMOUNT_CENTS,
         currency: "usd",
         customer: customer.id,
-        description: "TimeBACK Founders Club — Pilot Activation",
-        metadata: {
-          type: "founders_club_pilot",
-          companyName: companyName || "",
-          fullName,
-        },
+        description: isPromo
+          ? "TimeBACK Founders Club — Promo Activation (auth only)"
+          : "TimeBACK Founders Club — Pilot Activation",
+        metadata: isPromo
+          ? {
+              type: "founders_club_promo",
+              promoCode: VALID_PROMO,
+              originalAmount: String(PILOT_AMOUNT_CENTS),
+              companyName: companyName || "",
+              fullName,
+            }
+          : {
+              type: "founders_club_pilot",
+              companyName: companyName || "",
+              fullName,
+            },
+        ...(isPromo ? { capture_method: "manual" as const } : {}),
         automatic_payment_methods: { enabled: true },
       });
 
@@ -74,10 +87,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Customer ID required" }, { status: 400 });
       }
 
-      // Verify payment succeeded
+      // Verify payment succeeded (or authorized for promo)
+      let isPromoActivation = false;
       if (paymentIntentId) {
         const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
-        if (pi.status !== "succeeded") {
+        if (pi.status === "requires_capture" && pi.metadata.type === "founders_club_promo") {
+          // Promo flow: cancel the $1 auth hold (release it)
+          await stripe.paymentIntents.cancel(paymentIntentId);
+          isPromoActivation = true;
+        } else if (pi.status !== "succeeded") {
           return NextResponse.json({ error: "Payment not confirmed" }, { status: 400 });
         }
       }
@@ -100,18 +118,32 @@ export async function POST(req: NextRequest) {
       if (GHL_ENABLED && email && fullName && phone) {
         try {
           const orderDate = new Date().toISOString();
-          const orderNote = [
-            `🛒 ORDER: TimeBACK Founders Club Pilot`,
-            `Date: ${new Date().toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}`,
-            `Amount: $9.00`,
-            `Wallet: $20.00 loaded`,
-            `Stripe Customer: ${customerId}`,
-            `Stripe Subscription: ${subscription.id}`,
-            `Stripe Payment: ${paymentIntentId || "N/A"}`,
-            `Company: ${companyName || "N/A"}`,
-            `Product: AI Growth Engine — Metered Usage`,
-            `Billing Model: Wallet threshold ($20 default)`,
-          ].join("\n");
+          const orderNote = isPromoActivation
+            ? [
+                `🎁 ORDER: TimeBACK Founders Club — PROMO ACTIVATION`,
+                `Date: ${new Date().toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}`,
+                `PROMO: GETYOURTIMEBACKIN2026!`,
+                `Amount: $0.00 (promotional)`,
+                `Wallet: $20.00 loaded`,
+                `Stripe Customer: ${customerId}`,
+                `Stripe Subscription: ${subscription.id}`,
+                `Stripe Payment: ${paymentIntentId || "N/A"} ($1 auth released)`,
+                `Company: ${companyName || "N/A"}`,
+                `Product: AI Growth Engine — Metered Usage`,
+                `Billing Model: Wallet threshold ($20 default)`,
+              ].join("\n")
+            : [
+                `🛒 ORDER: TimeBACK Founders Club Pilot`,
+                `Date: ${new Date().toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}`,
+                `Amount: $9.00`,
+                `Wallet: $20.00 loaded`,
+                `Stripe Customer: ${customerId}`,
+                `Stripe Subscription: ${subscription.id}`,
+                `Stripe Payment: ${paymentIntentId || "N/A"}`,
+                `Company: ${companyName || "N/A"}`,
+                `Product: AI Growth Engine — Metered Usage`,
+                `Billing Model: Wallet threshold ($20 default)`,
+              ].join("\n");
 
           await upsertContactAndTag({
             fullName,
@@ -121,7 +153,9 @@ export async function POST(req: NextRequest) {
             source: "TimeBACK Founders Club",
             tagsToAdd: [
               "Status - Onboarding Pipeline - Pilot Activated",
-              "Activity - Founders Club - Pilot Payment Complete",
+              isPromoActivation
+                ? "Activity - Founders Club - Promo Activated"
+                : "Activity - Founders Club - Pilot Payment Complete",
               "Activity - Onboarding - Wallet Loaded",
               "Profile - Source - Founders Club Landing Page",
               "Profile - Product - AI Growth Engine",
@@ -136,15 +170,16 @@ export async function POST(req: NextRequest) {
       // Slack notification for payment
       const SLACK_WEBHOOK = process.env.SLACK_NOTIFICATION_WEBHOOK;
       const paymentTime = new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" });
-      console.log(`[notify] Founders Club payment: ${fullName} | ${email}`);
+      console.log(`[notify] Founders Club ${isPromoActivation ? "promo" : "payment"}: ${fullName} | ${email}`);
       if (SLACK_WEBHOOK) {
         try {
+          const slackText = isPromoActivation
+            ? `🎁 *New CATO AI Promo Activation*\n• *Name:* ${fullName}\n• *Email:* ${email}\n• *Promo Code:* GETYOURTIMEBACKIN2026!\n• *Amount:* $0.00 (promotional) + $20.00 wallet\n• *Company:* ${companyName || "N/A"}\n• *Time:* ${paymentTime}`
+            : `🔥 *New CATO AI Activation Payment*\n• *Name:* ${fullName}\n• *Email:* ${email}\n• *Amount:* $9.00 (pilot) + $20.00 wallet\n• *Company:* ${companyName || "N/A"}\n• *Time:* ${paymentTime}`;
           await fetch(SLACK_WEBHOOK, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              text: `🔥 *New CATO AI Activation Payment*\n• *Name:* ${fullName}\n• *Email:* ${email}\n• *Amount:* $9.00 (pilot) + $20.00 wallet\n• *Company:* ${companyName || "N/A"}\n• *Time:* ${paymentTime}`,
-            }),
+            body: JSON.stringify({ text: slackText }),
             signal: AbortSignal.timeout(5000),
           });
         } catch (notifyErr) {
