@@ -375,8 +375,15 @@ export default function FoundersClubPage() {
 
   return (
     <div className="min-h-screen bg-brand-bg tech-grid">
+      {/* Hello Bar */}
+      <div className="bg-brand-primary/10 border-b border-brand-primary/20 text-center py-2 sticky top-0 z-50">
+        <a href="https://support.razorsharpnetworks.com" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-brand-primary hover:text-brand-fg transition-colors inline-flex items-center gap-1.5">
+          Need help? Visit <span className="underline underline-offset-2">TimeBACK Support HQ</span> <ArrowRight size={12} />
+        </a>
+      </div>
+
       {/* Header */}
-      <header className="border-b border-brand-border/50 bg-brand-bg/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-brand-border/50 bg-brand-bg/80 backdrop-blur-md sticky top-[32px] z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/rs-icon.png" alt="RazoRSharp" className="h-8 w-8" />
