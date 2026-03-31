@@ -16,19 +16,20 @@ const FOUNDERS_DEADLINE = new Date("2026-04-05T07:00:00.000Z"); // midnight PT =
 const isFoundersExpired = () => new Date() >= FOUNDERS_DEADLINE;
 
 function FoundersCountdown() {
-  const [timeLeft, setTimeLeft] = useState("");
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [mins, setMins] = useState(0);
+  const [secs, setSecs] = useState(0);
   const [expired, setExpired] = useState(isFoundersExpired());
 
   useEffect(() => {
     function update() {
-      const now = new Date();
-      const diff = FOUNDERS_DEADLINE.getTime() - now.getTime();
-      if (diff <= 0) { setExpired(true); setTimeLeft(""); return; }
-      const days = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const mins = Math.floor((diff % 3600000) / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      setTimeLeft(`${days}d ${hours}h ${mins}m ${secs}s`);
+      const diff = FOUNDERS_DEADLINE.getTime() - Date.now();
+      if (diff <= 0) { setExpired(true); return; }
+      setDays(Math.floor(diff / 86400000));
+      setHours(Math.floor((diff % 86400000) / 3600000));
+      setMins(Math.floor((diff % 3600000) / 60000));
+      setSecs(Math.floor((diff % 60000) / 1000));
     }
     update();
     const interval = setInterval(update, 1000);
@@ -38,12 +39,24 @@ function FoundersCountdown() {
   if (expired) return null;
 
   return (
-    <div className="bg-gradient-to-r from-brand-primary/20 to-brand-accent/20 border border-brand-primary/30 rounded-xl p-4 text-center mb-6">
-      <div className="flex items-center justify-center gap-2 mb-1">
-        <Clock size={16} className="text-brand-primary" />
-        <span className="text-sm font-semibold text-brand-fg">Founders Club Special Ends Saturday, April 5th at Midnight</span>
+    <div className="text-center mb-6">
+      <p className="text-xs uppercase tracking-widest text-brand-muted mb-3">Founders Club ends April 5th</p>
+      <div className="inline-flex items-center gap-3">
+        {[
+          { value: days, label: "Days" },
+          { value: hours, label: "Hrs" },
+          { value: mins, label: "Min" },
+          { value: secs, label: "Sec" },
+        ].map((unit, i) => (
+          <React.Fragment key={unit.label}>
+            {i > 0 && <span className="text-brand-muted/40 text-lg font-light">:</span>}
+            <div className="flex flex-col items-center">
+              <span className="text-2xl font-bold text-brand-fg tabular-nums w-10 text-center">{String(unit.value).padStart(2, "0")}</span>
+              <span className="text-[10px] uppercase tracking-wider text-brand-muted">{unit.label}</span>
+            </div>
+          </React.Fragment>
+        ))}
       </div>
-      <div className="text-brand-primary font-mono font-bold text-lg">{timeLeft}</div>
     </div>
   );
 }
