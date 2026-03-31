@@ -62,9 +62,9 @@ function FoundersCountdown() {
 }
 
 // ─── Step 1: Info Capture ───────────────────────────────────────────────────
-function StepInfo({ onNext }: { onNext: (data: {
+function StepInfo({ onNext, promoSlot }: { onNext: (data: {
   fullName: string; email: string; phone: string; companyName: string;
-}) => void }) {
+}) => void; promoSlot?: React.ReactNode }) {
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", companyName: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [honeypot, setHoneypot] = useState("");
@@ -104,6 +104,8 @@ function StepInfo({ onNext }: { onNext: (data: {
 
       {/* Honeypot */}
       <input type="text" name="_hp" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} className="hidden" tabIndex={-1} autoComplete="off" />
+
+      {promoSlot}
 
       <button
         onClick={() => { if (honeypot) return; if (validate()) onNext(form); }}
@@ -151,19 +153,19 @@ function CheckoutForm({ onSuccess, customerData, isPromo }: {
       <div>
         <h3 className="text-xl font-bold text-brand-fg mb-1">Activate Your Pilot</h3>
         <p className="text-brand-muted text-sm">
-          {isPromo ? "$1 authorization hold (released after verification). Your $20 AI wallet loads immediately." : "$9 today. Your $20 AI wallet loads immediately."}
+          {isPromo ? "Free activation! Your $20 AI wallet loads immediately." : "$9 today. Your $20 AI wallet loads immediately."}
         </p>
       </div>
 
       <div className="glass-card rounded-xl p-4 space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-brand-fg font-medium">TimeBACK Founders Club</span>
-          <span className="text-brand-primary font-bold text-lg">{isPromo ? "$1" : "$9"}</span>
+          <span className="text-brand-primary font-bold text-lg">{isPromo ? "$0" : "$9"}</span>
         </div>
         {isPromo && (
           <div className="flex items-center gap-2 text-xs text-brand-green">
             <Sparkles size={12} />
-            <span>Promo applied — $1 auth hold released after verification</span>
+            <span>Promo applied — free activation!</span>
           </div>
         )}
         <div className="border-t border-brand-border pt-3 space-y-1.5">
@@ -199,7 +201,7 @@ function CheckoutForm({ onSuccess, customerData, isPromo }: {
         disabled={!stripe || loading}
         className="w-full py-3.5 rounded-lg bg-brand-gradient text-white font-semibold text-base shadow-brand-glow hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {loading ? "Processing..." : isPromo ? "Authorize $1 & Activate" : "Pay $9 & Activate"} {!loading && <Zap size={18} />}
+        {loading ? "Processing..." : isPromo ? "Activate for Free" : "Pay $9 & Activate"} {!loading && <Zap size={18} />}
       </button>
 
       <p className="text-center text-xs text-brand-muted">
@@ -549,9 +551,8 @@ export default function FoundersClubPage() {
             <div className="glass-card rounded-2xl p-6 md:p-8">
               <FoundersCountdown />
               {step === "info" && (
-                <>
-                  <StepInfo onNext={handleInfoComplete} />
-                  <div className="mt-4 text-center">
+                <StepInfo onNext={handleInfoComplete} promoSlot={
+                  <div className="text-center">
                     <button
                       type="button"
                       onClick={() => setShowPromo(!showPromo)}
@@ -570,13 +571,13 @@ export default function FoundersClubPage() {
                         />
                         {promoCode.trim() && (
                           <p className={`text-xs mt-1.5 ${isValidPromo ? "text-brand-green" : "text-brand-muted"}`}>
-                            {isValidPromo ? "✓ Promo code applied! $1 authorization instead of $9" : "Code not recognized — standard pricing applies"}
+                            {isValidPromo ? "✓ Promo code applied! Join for free!" : "Code not recognized — standard pricing applies"}
                           </p>
                         )}
                       </div>
                     )}
                   </div>
-                </>
+                } />
               )}
               {step === "payment" && clientSecret && (
                 <Elements stripe={stripePromise} options={elementsOptions}>
