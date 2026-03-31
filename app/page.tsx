@@ -385,11 +385,10 @@ export default function FoundersClubPage() {
       {/* Header */}
       <header className="border-b border-brand-border/50 bg-brand-bg/80 backdrop-blur-md sticky top-[32px] z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/rs-icon.png" alt="RazoRSharp" className="h-8 w-8" />
-            <span className="text-brand-fg font-semibold text-sm hidden sm:block">RazoRSharp Networks</span>
+          <div className="flex items-center">
+            <img src="/rsn-logo-wide.png" alt="RazoRSharp Networks" className="h-8 sm:h-10" />
           </div>
-          <span className="text-xs text-brand-muted">One System. One Flow. One Outcome. FREEDOM</span>
+          <span className="text-xs text-brand-muted">One System. One Flow. One Outcome. <span className="font-bold text-brand-primary">FREEDOM</span></span>
         </div>
       </header>
 
@@ -625,7 +624,7 @@ export default function FoundersClubPage() {
       <footer className="border-t border-brand-border/50 py-8">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-muted">
           <span>© 2026 RazoRSharp Networks. All rights reserved.</span>
-          <span>One System. One Flow. One Outcome. FREEDOM</span>
+          <span>One System. One Flow. One Outcome. <span className="font-bold text-brand-primary">FREEDOM</span></span>
         </div>
       </footer>
     </div>
