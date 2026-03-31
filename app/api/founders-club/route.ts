@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
         amount: isPromo ? 100 : PILOT_AMOUNT_CENTS,
         currency: "usd",
         customer: customer.id,
+        setup_future_usage: "off_session",
         description: isPromo
           ? "TimeBACK Founders Club — Promo Activation (auth only)"
           : "TimeBACK Founders Club — Pilot Activation",
@@ -97,6 +98,16 @@ export async function POST(req: NextRequest) {
           isPromoActivation = true;
         } else if (pi.status !== "succeeded") {
           return NextResponse.json({ error: "Payment not confirmed" }, { status: 400 });
+        }
+      }
+
+      // Attach the payment method from the $9 charge as default for future billing
+      if (paymentIntentId && !isPromoActivation) {
+        const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+        if (pi.payment_method && typeof pi.payment_method === "string") {
+          await stripe.customers.update(customerId, {
+            invoice_settings: { default_payment_method: pi.payment_method },
+          });
         }
       }
 
