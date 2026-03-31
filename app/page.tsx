@@ -11,6 +11,43 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
+// Founders Club deadline: Saturday April 5th 2026 at midnight PT
+const FOUNDERS_DEADLINE = new Date("2026-04-05T07:00:00.000Z"); // midnight PT = 7am UTC
+const isFoundersExpired = () => new Date() >= FOUNDERS_DEADLINE;
+
+function FoundersCountdown() {
+  const [timeLeft, setTimeLeft] = useState("");
+  const [expired, setExpired] = useState(isFoundersExpired());
+
+  useEffect(() => {
+    function update() {
+      const now = new Date();
+      const diff = FOUNDERS_DEADLINE.getTime() - now.getTime();
+      if (diff <= 0) { setExpired(true); setTimeLeft(""); return; }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${days}d ${hours}h ${mins}m ${secs}s`);
+    }
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (expired) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-brand-primary/20 to-brand-accent/20 border border-brand-primary/30 rounded-xl p-4 text-center mb-6">
+      <div className="flex items-center justify-center gap-2 mb-1">
+        <Clock size={16} className="text-brand-primary" />
+        <span className="text-sm font-semibold text-brand-fg">Founders Club Special Ends Saturday, April 5th at Midnight</span>
+      </div>
+      <div className="text-brand-primary font-mono font-bold text-lg">{timeLeft}</div>
+    </div>
+  );
+}
+
 // ─── Step 1: Info Capture ───────────────────────────────────────────────────
 function StepInfo({ onNext }: { onNext: (data: {
   fullName: string; email: string; phone: string; companyName: string;
@@ -339,6 +376,8 @@ export default function FoundersClubPage() {
       <main className="max-w-5xl mx-auto px-4 py-12 md:py-20">
         {/* Hero */}
         <section className="text-center mb-16 md:mb-20">
+          <FoundersCountdown />
+
           <div className="inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/20 rounded-full px-4 py-1.5 mb-6">
             <Sparkles size={14} className="text-brand-primary" />
             <span className="text-xs font-medium text-brand-primary">TimeBACK Founders Club — Limited Pilot</span>
@@ -458,7 +497,38 @@ export default function FoundersClubPage() {
         {/* Join Form */}
         <section id="join" className="mb-16 md:mb-20 scroll-mt-24">
           <div className="max-w-md mx-auto">
+            {isFoundersExpired() ? (
+              <div className="glass-card rounded-2xl p-6 md:p-8 opacity-75 relative">
+                <div className="absolute inset-0 bg-brand-bg/60 rounded-2xl flex flex-col items-center justify-center z-10">
+                  <div className="bg-brand-card border border-brand-border rounded-xl p-6 text-center max-w-sm">
+                    <Clock size={32} className="text-brand-muted mx-auto mb-3" />
+                    <h3 className="text-xl font-bold text-brand-fg mb-2">Founders Club Special Has Ended</h3>
+                    <p className="text-sm text-brand-muted mb-4">This exclusive offer closed on April 5th, 2026. Stay tuned for future opportunities.</p>
+                    <p className="text-xs text-brand-muted">Interested? Reach out at <a href="mailto:hello@razorsharpnetworks.com" className="text-brand-primary hover:underline">hello@razorsharpnetworks.com</a></p>
+                  </div>
+                </div>
+                {/* Greyed-out form behind the overlay */}
+                <div className="pointer-events-none select-none">
+                  <div className="space-y-5">
+                    <div>
+                      <h3 className="text-xl font-bold text-brand-fg mb-1">Join the Founders Club</h3>
+                      <p className="text-brand-muted text-sm">Tell us about you and your business.</p>
+                    </div>
+                    {["Full Name", "Email", "Phone", "Company Name"].map((label) => (
+                      <div key={label}>
+                        <label className="block text-sm font-medium text-brand-fg mb-1.5">{label}</label>
+                        <div className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-3 text-brand-muted/30 text-sm">—</div>
+                      </div>
+                    ))}
+                    <div className="w-full py-3.5 rounded-lg bg-brand-muted/20 text-brand-muted font-semibold text-base text-center">
+                      Offer Expired
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
             <div className="glass-card rounded-2xl p-6 md:p-8">
+              <FoundersCountdown />
               {step === "info" && (
                 <>
                   <StepInfo onNext={handleInfoComplete} />
@@ -501,6 +571,7 @@ export default function FoundersClubPage() {
                 </div>
               )}
             </div>
+            )}
           </div>
         </section>
 
@@ -512,10 +583,21 @@ export default function FoundersClubPage() {
 
         {/* Final CTA */}
         <section className="text-center pb-12">
-          <p className="text-brand-muted mb-4">Ready to get your time back?</p>
-          <a href="#join" className="inline-flex items-center gap-2 py-3 px-6 rounded-lg bg-brand-gradient text-white font-semibold shadow-brand-glow hover:opacity-90 transition-all">
-            Join the Founders Club — $9 <ArrowRight size={18} />
-          </a>
+          {isFoundersExpired() ? (
+            <>
+              <p className="text-brand-muted mb-4">The Founders Club special has ended.</p>
+              <a href="mailto:hello@razorsharpnetworks.com" className="inline-flex items-center gap-2 py-3 px-6 rounded-lg bg-brand-card border border-brand-border text-brand-muted font-semibold hover:border-brand-primary/30 transition-all">
+                Contact Us for Future Opportunities <ArrowRight size={18} />
+              </a>
+            </>
+          ) : (
+            <>
+              <p className="text-brand-muted mb-4">Ready to get your time back?</p>
+              <a href="#join" className="inline-flex items-center gap-2 py-3 px-6 rounded-lg bg-brand-gradient text-white font-semibold shadow-brand-glow hover:opacity-90 transition-all">
+                Join the Founders Club — $9 <ArrowRight size={18} />
+              </a>
+            </>
+          )}
         </section>
       </main>
 
