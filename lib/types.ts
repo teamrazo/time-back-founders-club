@@ -139,6 +139,7 @@ export interface OnboardingStatus {
   stage1: StageStatus;
   stage2: StageStatus;
   stage3: StageStatus;
+  slackSetupComplete: boolean;
   lastUpdated: string;
 }
 
@@ -252,6 +253,7 @@ export const defaultOnboardingStatus: OnboardingStatus = {
   stage1: 'not-started',
   stage2: 'not-started',
   stage3: 'not-started',
+  slackSetupComplete: false,
   lastUpdated: new Date().toISOString(),
 };
 

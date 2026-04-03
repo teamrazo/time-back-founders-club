@@ -2,7 +2,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Clock, Circle, ChevronRight, Zap, Target, Key, X } from "lucide-react";
+import { CheckCircle2, Clock, Circle, ChevronRight, ChevronUp, Zap, Target, Key, X, Smartphone, Monitor } from "lucide-react";
 import { storage } from "@/lib/storage";
 import { OnboardingStatus, StageStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -120,12 +120,15 @@ function HomePage() {
   const [entryComplete, setEntryComplete] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [checkingServer, setCheckingServer] = useState(false);
+  const [slackOpen, setSlackOpen] = useState(false);
+  const [slackDone, setSlackDone] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const s = storage.getStatus();
     setStatus(s);
     setEntryComplete(s.entryComplete);
+    setSlackDone(s.slackSetupComplete ?? false);
 
     // Check for stage completion redirect
     for (const key of ["stage1", "stage2", "stage3"]) {
@@ -268,6 +271,190 @@ function HomePage() {
             </p>
           </div>
         )}
+
+        {/* Slack Setup Guide */}
+        <div className="mb-6 animate-slide-up">
+          <div className={cn(
+            "rounded-xl border transition-all duration-200",
+            slackDone
+              ? "border-emerald-500/40 bg-emerald-500/5"
+              : "border-brand-border bg-brand-card"
+          )}>
+            {/* Header row — always visible */}
+            <div className="flex items-center justify-between gap-3 p-5">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-xl flex-shrink-0">📬</span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-bold text-brand-fg leading-tight">
+                      Set Up Your Slack Channel
+                    </h2>
+                    {slackDone && (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
+                        <CheckCircle2 size={13} />
+                        Done
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-brand-muted mt-0.5 leading-relaxed">
+                    {slackDone
+                      ? "You're all set — CATO will be waiting in your channel."
+                      : "You received a Slack invite. Here's exactly what to do with it."}
+                  </p>
+                </div>
+              </div>
+              {!slackDone && (
+                <button
+                  onClick={() => setSlackOpen(v => !v)}
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary border border-brand-primary/20 transition-all duration-150"
+                >
+                  {slackOpen ? (
+                    <>Hide <ChevronUp size={15} /></>
+                  ) : (
+                    <>Set up Slack <ChevronRight size={15} /></>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Expandable body */}
+            {slackOpen && !slackDone && (
+              <div className="px-5 pb-6 border-t border-brand-border/60">
+                {/* Video placeholder */}
+                <div className="mt-5 rounded-lg border border-dashed border-brand-border flex items-center justify-center py-5 px-4">
+                  <p className="text-sm text-brand-muted text-center">
+                    📹 <span className="font-medium">Video walkthrough coming soon</span>
+                  </p>
+                </div>
+
+                {/* Why Slack matters */}
+                <div className="mt-5 p-4 rounded-lg bg-brand-primary/5 border border-brand-primary/15">
+                  <p className="text-sm font-semibold text-brand-fg mb-1">Why Slack matters for your business</p>
+                  <p className="text-sm text-brand-muted-light leading-relaxed">
+                    Slack is your private command center. This is where <strong className="text-brand-fg">CATO</strong> (your AI Growth Engineer) delivers daily coaching briefs, where you ask questions, request changes, and track progress. It&apos;s not optional — it&apos;s the core of how TimeBACK delivers value.
+                  </p>
+                </div>
+
+                {/* Steps */}
+                <div className="mt-5 space-y-4">
+                  {/* Step 1 */}
+                  <div className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-primary/15 text-brand-primary text-xs font-bold flex items-center justify-center mt-0.5">1</span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-fg">Check your email</p>
+                      <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
+                        Look for an invite from <strong className="text-brand-fg">&ldquo;Slack&rdquo;</strong> or <strong className="text-brand-fg">&ldquo;RazoRSharp Networks&rdquo;</strong>. Check your spam and promotions folders if you don&apos;t see it.
+                      </p>
+                      {/* Tip */}
+                      <div className="mt-2 px-3 py-2 rounded-lg bg-brand-primary/5 border border-brand-primary/20 text-xs text-brand-muted-light leading-relaxed">
+                        💡 Not seeing your invite? Check spam, or email <span className="text-brand-primary font-medium">support@razorsharpnetworks.com</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-primary/15 text-brand-primary text-xs font-bold flex items-center justify-center mt-0.5">2</span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-fg">Click &ldquo;Join Now&rdquo;</p>
+                      <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
+                        Open the invite email and click the Join Now button. This opens Slack in your browser — no download required yet.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-primary/15 text-brand-primary text-xs font-bold flex items-center justify-center mt-0.5">3</span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-fg">Create your Slack account <span className="text-brand-muted font-normal">(if new to Slack)</span></p>
+                      <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
+                        Use your business email and create a password. You can also sign in with Google for faster setup.
+                      </p>
+                      <div className="mt-2 px-3 py-2 rounded-lg bg-brand-primary/5 border border-brand-primary/20 text-xs text-brand-muted-light leading-relaxed">
+                        💡 Slack is free to use. You do not need a paid plan.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-primary/15 text-brand-primary text-xs font-bold flex items-center justify-center mt-0.5">4</span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-fg">Download the app <span className="text-brand-muted font-normal">(recommended)</span></p>
+                      <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
+                        Get Slack on your devices so you never miss a coaching brief.
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <a href="https://slack.com/intl/en-us/downloads/mac" target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-brand-card-hover hover:border-brand-primary/30 text-xs text-brand-muted-light transition-colors">
+                          <Monitor size={13} /> Mac
+                        </a>
+                        <a href="https://slack.com/intl/en-us/downloads/windows" target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-brand-card-hover hover:border-brand-primary/30 text-xs text-brand-muted-light transition-colors">
+                          <Monitor size={13} /> Windows
+                        </a>
+                        <a href="https://apps.apple.com/app/slack/id618783545" target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-brand-card-hover hover:border-brand-primary/30 text-xs text-brand-muted-light transition-colors">
+                          <Smartphone size={13} /> iOS
+                        </a>
+                        <a href="https://play.google.com/store/apps/details?id=com.Slack" target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-brand-card-hover hover:border-brand-primary/30 text-xs text-brand-muted-light transition-colors">
+                          <Smartphone size={13} /> Android
+                        </a>
+                      </div>
+                      <div className="mt-2 px-3 py-2 rounded-lg bg-brand-primary/5 border border-brand-primary/20 text-xs text-brand-muted-light leading-relaxed">
+                        💡 You can use Slack on desktop, phone, or tablet. We recommend the mobile app so you never miss a coaching brief.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 5 */}
+                  <div className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-primary/15 text-brand-primary text-xs font-bold flex items-center justify-center mt-0.5">5</span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-fg">Find your private channel</p>
+                      <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
+                        In the left sidebar, look under <strong className="text-brand-fg">Channels</strong>. Your channel is named after your business (e.g. <strong className="text-brand-fg">#your-company-name</strong>).
+                      </p>
+                      <div className="mt-2 px-3 py-2 rounded-lg bg-brand-primary/5 border border-brand-primary/20 text-xs text-brand-muted-light leading-relaxed">
+                        💡 Your channel is private — only you, your team lead (Jesse), and CATO can see it.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 6 */}
+                  <div className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-primary/15 text-brand-primary text-xs font-bold flex items-center justify-center mt-0.5">6</span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-fg">Say hello! 👋</p>
+                      <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
+                        Type a message in your channel. CATO will respond within 24 hours of your FREEDOM profile being complete.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mark as done */}
+                <div className="mt-6 pt-5 border-t border-brand-border/60 flex justify-end">
+                  <button
+                    onClick={() => {
+                      const updated = { ...storage.getStatus(), slackSetupComplete: true };
+                      storage.setStatus(updated);
+                      setSlackDone(true);
+                      setSlackOpen(false);
+                      setStatus(updated);
+                    }}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 transition-all duration-150"
+                  >
+                    <CheckCircle2 size={16} />
+                    Mark as Done
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Stage cards */}
         <div className="space-y-4 animate-slide-up">
