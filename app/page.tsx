@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Zap, Shield, TrendingUp, Clock, ChevronRight,
   CheckCircle2, Sparkles, MessageSquare, BarChart3,
   Users, ArrowRight, ChevronDown
 } from "lucide-react";
+import { storage } from "@/lib/storage";
 import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
@@ -214,7 +216,7 @@ function CheckoutForm({ onSuccess, customerData, isPromo }: {
 // ─── Step 3: Confirmation ───────────────────────────────────────────────────
 function StepConfirm({ walletAmount }: { walletAmount: string }) {
   return (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-6 animate-fade-in">
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-green/10 mb-2">
         <CheckCircle2 size={36} className="text-brand-green" />
       </div>
@@ -242,14 +244,14 @@ function StepConfirm({ walletAmount }: { walletAmount: string }) {
       </div>
 
       <Link
-        href="/stage1"
+        href="/intake"
         className="inline-flex items-center gap-2 py-3.5 px-8 rounded-lg bg-brand-gradient text-white font-semibold shadow-brand-glow hover:opacity-90 transition-all"
       >
-        Complete Your Profile <ChevronRight size={18} />
+        Continue to Your Dashboard <ArrowRight size={18} />
       </Link>
 
       <p className="text-xs text-brand-muted">
-        Takes 8-12 minutes. The faster you complete it, the faster CATO starts delivering value.
+        Start your FREEDOM profile from the dashboard — takes 8-12 minutes.
       </p>
     </div>
   );
@@ -303,6 +305,7 @@ function FAQ() {
 
 // ─── Main Page ──────────────────────────────────────────────────────────────
 export default function FoundersClubPage() {
+  const router = useRouter();
   const [step, setStep] = useState<"info" | "payment" | "confirm">("info");
   const [customerData, setCustomerData] = useState({ fullName: "", email: "", phone: "", companyName: "", customerId: "" });
   const [clientSecret, setClientSecret] = useState("");
@@ -313,6 +316,16 @@ export default function FoundersClubPage() {
 
   const VALID_PROMO = "GETYOURTIMEBACKIN2026!";
   const isValidPromo = promoCode.trim().toUpperCase() === VALID_PROMO.toUpperCase();
+
+  // Redirect existing customers away from the signup page
+  useEffect(() => {
+    try {
+      const status = storage.getStatus();
+      if (status.entryComplete) {
+        router.replace("/intake");
+      }
+    } catch {}
+  }, [router]);
 
   async function handleInfoComplete(data: { fullName: string; email: string; phone: string; companyName: string }) {
     setLoading(true);
@@ -353,7 +366,12 @@ export default function FoundersClubPage() {
       const result = await res.json();
       if (result.success) {
         setWalletAmount(result.walletAmount || "$20.00");
+        // Mark payment/activation complete in localStorage
+        const currentStatus = storage.getStatus();
+        storage.setStatus({ ...currentStatus, entryComplete: true });
         setStep("confirm");
+        // Scroll to top so user sees confirmation immediately
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (err) {
       console.error(err);

@@ -102,7 +102,7 @@ function overallProgress(status: OnboardingStatus): number {
 }
 
 const STAGE_CONFIRMATIONS: Record<string, string> = {
-  stage1: "✅ TimeBACK Build received! Your AI Growth Engine profile is being created.",
+  stage1: "Stage 1 complete! Your FREEDOM profile has been submitted. CATO is building your system now.",
   stage2: "✅ Assessment received! Your strategy is being mapped.",
   stage3: "✅ Access confirmed! Your platforms are being connected.",
 };
@@ -132,7 +132,7 @@ function HomePage() {
       if (searchParams.get(key) === "complete" && STAGE_CONFIRMATIONS[key]) {
         setToast(STAGE_CONFIRMATIONS[key]);
         // Clear URL params without reload
-        window.history.replaceState({}, "", "/");
+        window.history.replaceState({}, "", "/intake");
         // Auto-dismiss after 8 seconds
         setTimeout(() => setToast(null), 8000);
         break;

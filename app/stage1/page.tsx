@@ -511,7 +511,7 @@ export default function Stage1Page() {
 
       const status = storage.getStatus();
       storage.setStatus({ ...status, stage1: 'complete', lastUpdated: new Date().toISOString() });
-      router.push('/?stage1=complete');
+      router.push('/intake?stage1=complete');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
