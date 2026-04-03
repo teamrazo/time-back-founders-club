@@ -122,7 +122,8 @@ function PlatformCard({
   entry: PlatformEntry;
   onUpdate: (update: PlatformEntry) => void;
 }) {
-  const STATUS_OPTIONS: { value: StatusOption; label: string; color: string }[] = [
+  const isPending = !entry.status;
+  const STATUS_OPTIONS: { value: StatusOption; label: string; color: 'emerald' | 'amber' | 'slate' }[] = [
     { value: 'granted', label: '✅ Access Granted', color: 'emerald' },
     { value: 'need-help', label: '🙋 Need Help', color: 'amber' },
     { value: 'na', label: '— Not Applicable', color: 'slate' },
@@ -130,16 +131,28 @@ function PlatformCard({
 
   return (
     <div className={cn(
-      "rounded-xl border p-5 transition-all duration-200",
-      entry.status === 'granted' ? "border-emerald-500/40 bg-emerald-500/5" :
-      entry.status === 'need-help' ? "border-amber-400/40 bg-amber-400/5" :
-      entry.status === 'na' ? "border-brand-border/50 bg-brand-card/50 opacity-60" :
-      "border-brand-border bg-brand-card"
+      "relative rounded-xl border-y border-r border-l-4 transition-all duration-200",
+      entry.status === 'granted'
+        ? "border-emerald-500/40 border-l-emerald-500 bg-emerald-500/5 p-4"
+        : entry.status === 'need-help'
+        ? "border-amber-400/40 border-l-amber-400 bg-amber-400/5 p-5"
+        : entry.status === 'na'
+        ? "border-brand-border/50 border-l-slate-500/60 bg-brand-card/50 opacity-60 p-4"
+        : "border-brand-border border-l-brand-primary bg-brand-card p-5"
     )}>
-      <div className="flex items-start justify-between gap-3 mb-3">
+      {/* Action required badge */}
+      {isPending && (
+        <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/40 text-amber-300 text-xs font-semibold">
+          ⚠️ Action required
+        </div>
+      )}
+
+      <div className={cn("flex items-start gap-3 mb-3", isPending ? "pr-32" : "")}>
         <div className="flex-1">
           <h4 className="font-semibold text-brand-fg">{platform.name}</h4>
-          <p className="text-xs text-brand-muted mt-1 leading-relaxed">{platform.why}</p>
+          {(!entry.status || entry.status === 'need-help') && (
+            <p className="text-xs text-brand-muted mt-1 leading-relaxed">{platform.why}</p>
+          )}
         </div>
         {entry.status === 'granted' && <CheckCircle2 size={20} className="text-emerald-400 flex-shrink-0 mt-0.5" />}
         {entry.status === 'need-help' && <AlertCircle size={20} className="text-amber-400 flex-shrink-0 mt-0.5" />}
@@ -171,24 +184,33 @@ function PlatformCard({
       )}
 
       {/* Status toggle */}
-      <div className="flex flex-wrap gap-2">
-        {STATUS_OPTIONS.map(opt => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onUpdate({ ...entry, status: opt.value === entry.status ? '' : opt.value })}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150",
-              entry.status === opt.value
-                ? opt.color === 'emerald' ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-                  : opt.color === 'amber' ? "bg-amber-400/20 border-amber-400/50 text-amber-300"
-                  : "bg-brand-slate border-slate-500 text-brand-fg/80"
-                : "bg-transparent border-brand-border text-brand-muted hover:border-brand-border-hover hover:text-brand-muted-light"
-            )}
-          >
-            {opt.label}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-brand-fg/80">👆 Select your status:</p>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          {STATUS_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onUpdate({ ...entry, status: opt.value === entry.status ? '' : opt.value })}
+              className={cn(
+                "px-4 py-2.5 rounded-lg text-sm font-semibold border transition-all duration-150",
+                entry.status === opt.value
+                  ? opt.color === 'emerald'
+                    ? "bg-emerald-500/30 border-emerald-500/60 text-emerald-300 ring-1 ring-emerald-500/50"
+                    : opt.color === 'amber'
+                    ? "bg-amber-400/30 border-amber-400/60 text-amber-300 ring-1 ring-amber-400/50"
+                    : "bg-slate-500/30 border-slate-400/60 text-slate-300 ring-1 ring-slate-400/50"
+                  : opt.color === 'emerald'
+                  ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25"
+                  : opt.color === 'amber'
+                  ? "bg-amber-400/15 border-amber-400/40 text-amber-300 hover:bg-amber-400/25"
+                  : "bg-slate-500/15 border-slate-400/40 text-slate-300 hover:bg-slate-500/25"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {entry.status === 'need-help' && (
@@ -409,6 +431,14 @@ export default function Stage3Page() {
           title="Platform Access"
           subtitle="For each platform below, grant us access to the listed email address. Use the toggle to mark your status."
         />
+
+        <div className="p-4 rounded-xl border border-brand-primary/30 bg-brand-primary/5">
+          <p className="text-sm font-semibold text-brand-fg mb-1">📋 How to complete this step</p>
+          <p className="text-sm text-brand-muted leading-relaxed">
+            For <strong className="text-brand-fg/80">each platform below</strong>, select your access status using the buttons on each card.
+            Every platform must be addressed before we can proceed — use <span className="text-amber-300 font-medium">&quot;Need Help&quot;</span> if you&apos;re unsure how to grant access.
+          </p>
+        </div>
 
         <div className="p-4 rounded-xl border border-amber-400/20 bg-amber-400/5">
           <p className="text-sm text-amber-200/80 leading-relaxed">
