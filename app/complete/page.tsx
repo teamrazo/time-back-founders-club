@@ -8,7 +8,6 @@ const NEXT_STEPS = [
   { icon: "🎯", text: "Your FREEDOM Plan is being drafted" },
   { icon: "📊", text: "Daily coaching briefs start within 48 hours" },
   { icon: "🔧", text: "Your platforms are being connected" },
-  { icon: "🚀", text: "Complete the Fast Start to hit the ground running" },
 ];
 
 export default function CompletePage() {
@@ -58,23 +57,55 @@ export default function CompletePage() {
           </div>
         </div>
 
-        {/* Fast Start CTA */}
-        <div className="p-6 rounded-xl border border-brand-primary/15 bg-brand-primary/5 mb-8">
-          <h3 className="text-sm font-bold gradient-text uppercase tracking-wide mb-2">
-            ⚡ Fast Start — Don&apos;t Skip This
+        {/* Action Steps */}
+        <div className="text-left space-y-4 mb-8">
+          <h3 className="text-sm font-bold text-brand-fg uppercase tracking-wide text-center mb-2">
+            👇 Your next two steps
           </h3>
-          <p className="text-sm text-brand-muted-light mb-4 leading-relaxed">
-            Your system is being built. While we work, complete the Fast Start guide to accelerate your launch and get the most out of your AI Growth Engine from day one.
-          </p>
-          <a
-            href="https://doc.razorsharpnetworks.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-dark text-white font-semibold text-sm transition-all shadow-brand-glow"
-          >
-            Start the Fast Start Guide
-            <ArrowRight size={16} />
-          </a>
+
+          {/* Step 1: Fast Start */}
+          <div className="p-6 rounded-xl border border-brand-primary/30 bg-brand-primary/5">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center">
+                <span className="text-sm font-bold text-brand-primary">1</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-base font-bold text-brand-fg mb-1">⚡ Complete the Fast Start Guide</h4>
+                <p className="text-sm text-brand-muted-light mb-4 leading-relaxed">
+                  Your system is being built. While we work, complete the Fast Start guide to accelerate your launch and get the most out of your AI Growth Engine from day one.
+                </p>
+                <a
+                  href="http://doc.razorsharpnetworks.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-dark text-white font-semibold text-sm transition-all shadow-brand-glow"
+                >
+                  Start the Fast Start Guide
+                  <ArrowRight size={16} />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2: Whitelist Domain */}
+          <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                <span className="text-sm font-bold text-emerald-400">2</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-base font-bold text-brand-fg mb-1">📧 Whitelist Our Domain</h4>
+                <p className="text-sm text-brand-muted-light mb-3 leading-relaxed">
+                  Add <strong className="text-brand-fg">@razorsharpnetworks.com</strong> to your email contacts or safe senders list. This ensures coaching briefs, reports, and important updates always reach your inbox — not spam.
+                </p>
+                <div className="p-3 rounded-lg bg-brand-card/60 border border-brand-border/50">
+                  <p className="text-xs text-brand-muted leading-relaxed">
+                    💡 <strong className="text-brand-muted-light">How:</strong> Open your email → Contacts → Add new contact → Enter <span className="text-brand-primary font-mono">support@razorsharpnetworks.com</span> → Save. This works for Gmail, Outlook, Yahoo, and most providers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Confirmation message */}
