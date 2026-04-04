@@ -343,7 +343,7 @@ function HomePage() {
                     <div>
                       <p className="text-sm font-semibold text-brand-fg">Check your email</p>
                       <p className="text-sm text-brand-muted-light mt-0.5 leading-relaxed">
-                        Look for an invite from <strong className="text-brand-fg">&ldquo;Slack&rdquo;</strong> or <strong className="text-brand-fg">&ldquo;RazoRSharp Networks&rdquo;</strong>. Check your spam and promotions folders if you don&apos;t see it.
+                        Look for an email invite from <strong className="text-brand-fg">&ldquo;Slack&rdquo;</strong> or <strong className="text-brand-fg">&ldquo;RSAI Growth Engine&rdquo;</strong>. Check your spam and promotions folders if you don&apos;t see it.
                       </p>
                       {/* Tip */}
                       <div className="mt-2 px-3 py-2 rounded-lg bg-brand-primary/5 border border-brand-primary/20 text-xs text-brand-muted-light leading-relaxed">
